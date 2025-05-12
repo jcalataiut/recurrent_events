@@ -1,0 +1,463 @@
+---
+title: "Exercici d'events recurrents en R (part II)"
+author: "Jose Calatayud Mateu"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+## Llibreria
+library(devtools)
+library(tidyverse)
+devtools::install_github("isglobal-brge/survrec", 
+                         build = FALSE)
+
+library(survrec)
+library(kableExtra)
+```
+
+Procedim a descarregar manualment l'arxius assosciats als paquet "gcmrec" que està dedicat a funcions de modelatge de models generals per events recurrents i el data sobre el qual treballarem "lymphoma":
+
+```{r}
+source(file="lymphoma.R")
+source(file="survrec.R")
+source(file="gcmrec.R")
+```
+
+El data "lymphoma" contenen els temps de recaiguda del càncer després del primer tractamenten pacients diagnosticats amb lymphoma de grau baix.
+
+```{r}
+head(lymphoma)
+```
+*NOTA*: la variable _time_ conté els temps entre esdeveniments, _event_ és la variable de censura que val 1 per a recaigudes de càncer i 0 per al darrer moemnt de seguiment (indicant que l'esdeveniment no s'ha observat), i la variable _id_ identifica cada pacient.
+
+## Exercici 1:
+
+ - *Estime los modelos AG, PWP-Gap time, PWP-Total time y WLW para determinar si existen diferencias en el tiempo de recaída en función del número de lesiones al momento del diagnóstico (variable distrib). NOTA: Deberá crear los marcos de datos adecuados para los modelos PWT-Gap time y WLW.*
+
+Utilizando los datos de lyphoma (package `gcmrec`), determinar si hay diferències en el temps de recaiguida segons el número de lesions al diagnóstic (variable `distrib`). Per dur-ho a terme, es tenen que estimar els models AG, PWP-Gap time, PWP-Total time y WLW. 
+
+El conjunt de dades contenen les següents variables:
+
+ - `id`: identificador del pacient
+ - `time`: temps entre recaiguda
+ - `event`: variable de censura (1 = recaiguda, 0 = últim seguiment sense observar res).
+ - `distrib`: nombre de lesions al diagnostic (0 = única, 1 = localitzada, 2 = més d'un lloc nodal, 3 = generalitzada).
+ - `sex`: sexo del pacient.
+ - `treat`: resposta al tratament.
+ - `age`: edat del pacient.
+
+
+#### **Preparar los datos para los diferentes modelos**
+
+##### 1. Model AG (Andersen-Gill)
+
+El model AG és una extensió del model de Cox proporcional de risc per a dades d'events recurrents. El seu objectiu és modelar el risc d'ocurrència d'un event recurrent, considerant que un subjecte pot experimentar múltiples events durant el periode de seguiment. A continuació, es detalla la seua estructura i suposits 
+
+El model AG asumeix que els events recurrents d'un subjecte segueixen un procès de recompte amb increments independents. El risc per al k-èssim event del subjecte i es modela com:
+
+$$
+\lambda_k(t;Z_{ik}) = \lambda_0(t) e^{\beta'Z_{it}(t)}
+$$
+d'on: 
+
+ - $\lambda_0(t)$ és la funció de risc basal comú a tots els individus
+ - $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim event.
+ - $\beta$ és el vector de paràmetres a estimar
+
+El model AG presenta els següent suposits en la seua construcció:
+
+ - *Independència dels increments*: El model AG assumeix que els temps entre esdeveniments consecutius son independents. Açò significa que, el risc d'un nou esdeveniment no depen d'esdeveniments previs, almenys que s'incloguen covariables que capturen eixa dependència (per example, el número d'esdeveniments previs com covariable del tipus temps)
+ 
+ - *Risc basal comú*: Es usposa que tots els individus comparteixen la mateixa funció de risc basal $\lambda_0(t)$. Açò pot ser un limitació si el risc basalvaria entre esdeveniments
+ 
+ - *Efecte proporcional de les covariables*: Les covariable tenen un efecte multiplicatiu constant sobre el risc, independenment del número d'esdevenimients previs
+
+Per poder dur a terme el model AG, les dades tenen que estar en format de recompte, és a dir, que cada fila representa un interval de temps entre esdeveniments consecutius i esto ho podem fer amb la funció `getCountingProcess` de la següent manera:
+
+
+```{r}
+# getCountingProcess: convertir les dades en format de recompte
+library(tidyverse)
+getCountingProcess <- function(x, colID, colTime) {
+  id <- x[, colID]
+  ids <- unique(id)
+  tt <- x[,colTime]
+  out <- NULL
+  for (i in 1:length(ids)){
+    tt.i <- tt[id%in%ids[i]]
+    start <- c(0, tt.i[-length(tt.i)])
+    out.i <- cbind(start, tt.i)
+    out <- rbind(out, out.i)
+  }
+  ans <- data.frame(x[,colID,drop=TRUE],
+                    x[,colTime],start=out[,1],stop=out[,2],
+                    x %>% dplyr::select(!c(colID, colTime)))
+  
+  names(ans)[1:2] <- names(x[,c(colID, colTime)])
+  return(ans)
+}
+
+```
+
+Abans de res, les dades deuen ordenar-se per `id` i `time` per garantir un anàlisis adequat d'events recurrents:
+
+```{r}
+lymphoma <- lymphoma[order(lymphoma$id, lymphoma$time), ]
+```
+
+Apliquem la funció `getCountingProcess` per obtendre el data en el format correcte per les meues dades:
+
+```{r}
+# Aplicar a les nostres dades
+lymphoma_ag <- getCountingProcess(lymphoma, colID = "id", colTime = "time")
+head(lymphoma_ag)
+```
+
+El model AG per avaluar si el número de lesions al diagnóstic s'associa amb els temps de recaiguda del càncer després del primer tractamenten pacients diagnosticats amb lymphoma de grau baix s'ajusta ampliant el model Cox implementat al `survival` package:
+
+```{r, warning=FALSE}
+library(survival)
+
+# Ajustar el modelo AG
+ag_model <- coxph(Surv(start, stop, event) ~ as.factor(distrib) + cluster(id), data = lymphoma_ag)
+summary(ag_model)
+```
+
+Anem a interpretar els resultats del model AG:
+
+ - Coeficients: els coeficients estimats $\beta$ indiquen que l'efecte de cada categoria de `distrib` sobre el risc de recaiguda.
+
+ - Exp(coef): És la interpretació en termes de risc relatiu respecte la categoria basal. En el nostre cas, la categoria basal és quan la lessió durant el diagnóstic és única.
+
+Amb els resultat del model, es pot veure que totes les categories de lessions durant el diagnostic son covariables significatives excepte la generalitzada.
+
+A l'hora d'escollir un model per al temps de recaiguda del cancer, és important tenir en compte el procés de la malaltia. Si després de patir la primera recaiguda, el riscde la següent pot augmentar, això suggereix un model que incorpori una covariable dependent del temps per al nombre de recaigudes o utilitzar un model que contingui estrats separats per a cada esdeveniment com el model PWP. Tanmateix, si el risc de recaure es manté constant independentment del nombre de recaigudes anteriors, el model AG seria adequat. Per investigar la dependència dels esdeveniments, hem de crear una variable dependent del temps (enum) que codifiqui el nombre de recaigudes. Aquesta variable es pot crear mitjançant aquesta funció:
+
+```{r}
+# getEnum: indica el número de recaigudes
+getEnum <- function(x, colID) {
+  id <- x[, colID]
+  ids <- unique(id)
+  out <- NULL
+  for (i in 1:length(ids)) {
+    tt.i <- sum(id %in% ids[i])
+    out.i <- 1:tt.i
+    out <- c(out, out.i)
+  }
+  out
+}
+
+```
+
+
+Aleshores, incorporem aquesta variable dependent del temps al model de recaigudes per analitzar la dependència entre els temps de recurrència. 
+
+```{r}
+lymphoma_ag$enum <- getEnum(lymphoma_ag, colID=1)
+head(lymphoma_ag)
+```
+
+Fent el nou model incorporant la covariable `enum`:
+
+```{r}
+ag.fit <- coxph(Surv(start, stop, event) ~ as.factor(distrib)+
+                  cluster(id), data=subset(lymphoma_ag, enum<4))
+ag.fit
+
+ag.fit.dep <- coxph(Surv(start, stop, event) ~ as.factor(distrib) + cluster(id) + enum, data=subset(lymphoma_ag, enum < 4))
+ag.fit.dep
+```
+
+Incloure la variable dependent del temps que té en compte el nombre de recaigudes previs (enum) redueix el valor de l'estadística $−2logL$ (per exemple, la desviació) que mesura la bondat d'ajust d'un model.
+
+```{r}
+deviance.1 <- -2*summary(ag.fit)$loglik[2] 
+deviance.2 <- -2*summary(ag.fit.dep)$loglik[2] 
+pchisq(deviance.1 - deviance.2, df=1, lower=FALSE)
+qchisq(p=0.95, df=1, lower=FALSE)
+```
+
+que es estadísticamente significatiu ($95\%$). 
+
+Per tant, el risc de recaiguda de cancer augmenta un $70\%$ $exp(0.5337)=1.70$ a mesura que augmenta el nombre recaigudes previes. El model AG assumeix una funció de risc de referència comuna per a totes les recaigudes. Per tant, podem pensar que utilitzar un model estratificat (model PWP) per nombre de recaigudes podria ser més apropiat. Això estima el model de temps total PWP, ja que les variables d'aturada estan anotades en el temps de calendari.
+
+##### 2. Model PWP-Total time
+
+En l'apartat anterior amb el model AG assumim una funció de risc de referència per a totes les recaigudes. Si volem pensar en utilitzar un model estratificant pel nombre de recaigudes aleshores el PWP model és més apropiat, és a dir, estimant el model de PWP total time fins que l'stop variables.
+
+D'aquest forma, el nou model consistirà en la incorporació de la variable `enum` com a estrat dintre del model AG per obtindre el model PWP-Total time:
+
+```{r}
+pwp.fit.total <- coxph(Surv(start, stop, event) ~ as.factor(distrib) + cluster(id) + strata(enum), data=subset(lymphoma_ag, enum < 4))
+
+pwp.fit.total
+```
+
+Podem observar dels resultat, que cap dels coeficients del model és significatiu i que la incorporació per estrats disminueix el risc en totes tres categories respecte el model AG.
+
+En canvi, encara que reduisca el risc, el que sí que es pot veure, es que es manté la relació de que la lesió en més d'un lloc nodal durant el diagnostic continua matinguent un risc superior que en els altres casos. 
+
+##### 3. Model PWP-Gap time
+
+El model PWP-Gap time és una extensió del model de Cox per a esdeveniments recurrents que es centra en el temps entre events consecutius (gap time). A diferència del model AG, que considera el temps total desde el inici de seguiment, el model de PWP-Gap time modela el temps entre la ocurrència d'un esdeveniment i el següent. Açò és útil quan el risc d'un nou esdevenimient depen del temps transcurrit des de l'últim esdeveniment.
+
+El model PWP-Gap time assumeix que els temps entre esdeveniments consecutius formen un procés de renovació. El risc per al k-èssim esdeveniment del individu `i` es modela com:
+
+$$
+\lambda_k(t;Z_{ik}) = \lambda_{0k}(t) e^{\beta'Z_{it}(t)}
+$$
+d'on: 
+
+ - $\lambda_{0k}(t)$ és la funció de risc basal per al k-èssim esdeveniment.
+ - $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim esdeveniment.
+ - $\beta$ és el vector de paràmetres a estimar.
+ 
+En aquest model, cada esdeveniment pot tindre la seua propia funció de risc basal ($\lambda_{0k}(t)$), lo que permiteix capturar diferències en el risc entre esdeveniments successius. Endemés, dintre dels seus suposits trobem:
+ 
+ - *Procés de renovació*: els temps entre esdeveniments consecutius es suposen independents y la distribució del próxim temps entre events depen només del últim esdevenimment.
+ 
+ - *Risc basal especific del esdeveniment*: cada esdeveniment pot tindre una funció de risc basal diferent.
+ 
+ - *Efecte proporcional de les covariables*: les covariables tenen un efecte multiplicatiu constant sobre el risc, independent del número d'esdeveniments previs.
+ 
+ En el model PWP-Gap time, les dades tenen que estructurar-se en el format de temps entre esdeveniments (gap time), és a dir, cada fila té que representar el temps transcurrit des de l'últim esdeveniment fins al següent. La següent funció ens ajudarà a fer-ho:
+
+```{r}
+convert_gap_time <- function(df, colID, colStop, colStart ) {
+  df_gap <- df
+  df_gap <- df[order(df[[colID]], df[[colStop]]), ]  # ordenar per individu i temps
+
+  # Inicialitzar nova columna 'gap_time'
+  df_gap$gap_stop <- NA
+
+  ids <- unique(df[[colID]])
+  for (i in ids) {
+    idx <- which(df[[colID]] == i)
+    n <- length(idx)
+
+    # Calcular temps entre esdeveniments consecutius
+    times <- df[[colStop]][idx]
+    gaps <- c(times[1], diff(times))
+    df_gap$gap_stop[idx] <- gaps
+  }
+
+  df_gap$start <- 0
+  df_gap$stop <- df_gap$gap_stop
+  df_gap$gap_stop <- NULL  # opcional: eliminar columna auxiliar
+
+  return(df_gap)
+}
+
+```
+
+
+Aplicant la funció a les nostres dades per obtindre el format correcte:
+
+```{r}
+lymphoma_pwp <- convert_gap_time(lymphoma_ag, colID = "id", colStop = "stop", colStart = "start")
+head(lymphoma_pwp)
+```
+
+Ara, realitzem el model PWP-Gap time amb les dades en el format adequat:
+
+```{r, warning=FALSE}
+pwp.fit <- coxph(Surv(start, stop, event) ~ as.factor(distrib)+
+                  cluster(id) + strata(enum), data=lymphoma_pwp)
+pwp.fit
+
+```
+
+I amb el model PWP-Gap time també podem obtindre coeficients de regressió per estrat, de la següent manera:
+
+```{r, warning=FALSE}
+pwp.fit.strata <- coxph(Surv(start, stop, event) ~ as.factor(distrib)* strata(enum) +
+                  cluster(id), data=lymphoma_pwp)
+pwp.fit.strata
+```
+
+Cal tenir en compte que els coeficients d'algunes covariables no es poden estimar. Si el nombre de subjectes disminueix a mesura que augmenta $k$ (esdeveniment), no es poden obtenir estimacions de coeficients estables per a aquests rangs més alts, $k$, de recaigudes. Veiem que, els únics valors on el model no té la capacitat d'obtindre els NA son en la categoria de lessió generalitzada quan el nombre de racaigudes és superior a 2. Per solventar aquesta problema podem limitar el nombre de recaigudes a 3 i que el model sí tinga la capacitat de ajustar correctament els coeficients, com es mostra:
+
+```{r, warning=FALSE}
+pwp.fit.strata.3 <- coxph(Surv(start, stop, event) ~ as.factor(distrib) + strata(enum) +
+                  cluster(id) , data=subset(lymphoma_pwp, enum<3))
+pwp.fit.strata.3
+```
+
+Les funcions de supervivència de referència es podem estimar i representar gràficament:
+
+```{r, message=FALSE, warning=FALSE}
+pwp.fit.strata.3 <- coxph(Surv(start, stop, event) ~ as.factor(distrib) + strata(enum) + cluster(id),data=subset(lymphoma_pwp, enum<4))
+
+plot(survfit(pwp.fit.strata.3),lty=c(1,2,3))
+legend("topright", c("1st recaiguda", "2nd recaiguda", "3rd recaiguda"), lty=c(1,2,3), cex = 0.7)
+```
+gráficament, es pot observar les mateixes conclusions que hem deduït en el model AG i la necessitat d'estratificar pel nombre de recaigudes previes. Ací, s'observa que les estimacions de les funcions de supervivència disminueixen significativament després de la primera recaiguda al llarg del temps. Veiem que aquells individus que presenten més d'una recaiguda la seua supervivència es prou inferior a aquells que només experimenten una.
+
+Podem veure com afecta al nombre de lessions del model AG:
+
+```{r, message=FALSE, warning=FALSE}
+ag.fit <- coxph(Surv(start, stop, event) ~ as.factor(distrib) +
+                      cluster(id), data=subset(lymphoma_ag, enum<4))
+
+plot(survfit(ag.fit.dep), lty=c(1,2,4)) 
+legend("bottomleft", c("localitzada", "> 1 lloc nodal", "generalitzada"), lty=c(1,2,4), cex = 0.7)
+```
+
+Veiem que, quan els individus presenten lessions en més d'un lloc nodal, la seua funció de supervivència decau més rapidament que en els altres condicions. Endemés, si presenta una lessió generalitzada, la seua funció de supervivència és la més elevada, inclús al llarg del temps experimenta un petit increment. Encara que en es altre casos açò no passa.
+
+
+#### 3. Model WLW (Wei, Lin y Weisfeld)
+
+El model WLW és una extensió del model de COx per a esdeveniments recurrents que permiteix utilitzar dades amb múltiples temps de fallada incomplets. A diferència dels models AG i PWP, que es centren en el procés de recompte o el temps entre esdeveniments, de model WLW modela la distribució marginal de cada esdeveniment recurrent, permitint que cada esdeveniment tinga la seua propia funció de risc basal.
+
+El model assumeix que la funció de risc per a k-èssim esdeveniment del individu i és:
+
+$$
+\lambda_k(t;Z_{ik}) = \lambda_{0k}(t) e^{\beta'Z_{it}(t)}
+$$
+d'on: 
+
+ - $\lambda_{0k}(t)$ és la funció de risc basal per al k-èssim esdeveniment.
+ - $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim esdeveniment.
+ - $\beta$ és el vector de paràmetres a estimar.
+ 
+En aquest model, cada esdeveniment pot tindre la seua propia funció de risc basal ($\lambda_{0k}(t)$), lo que permiteix capturar diferències en el risc entre esdeveniments successius. Endemés, dintre dels seus suposits trobem:
+ 
+ - *Indepència condicional*: els temps entre esdeveniments recurrents son independents condicionalment a les covariables
+ 
+ - *Risc basal especific del esdeveniment*: cada esdeveniment pot tindre una funció de risc basal diferent.
+ 
+ - *Efecte proporcional de les covariables*: les covariables tenen un efecte multiplicatiu constant sobre el risc, independent del número d'esdeveniments previs.
+ 
+En el model WLW, les dades tenen que estructurar-se en el format de temps total des de l'inici, és a dir, cada fila té que representar el temps transcurrit des de l'últim esdeveniment fins al següent i que cada pacient tinga el mateix nombre d'entrades. Per example podem fixar el nombre de recaigudes a 3, però els casos que presenten menys, tenim que duplicar-les. La següent funció ens dona el data ven estructurat
+
+```{r}
+conver_total_time <- function(df, colID, lim=3){
+  df.total <- NULL
+  ids <- unique(df[[colID]])
+  for (i in ids){
+    aux <- sum(df[colID]==i)
+    mat <- df[df[,colID]==i, ]
+    
+    if(aux < lim){
+      df.total <- rbind(df.total, mat)
+      ultima <- mat[aux,]
+      while(aux < lim){
+        df.total <- rbind(df.total, ultima)
+        aux <- aux +1
+      }
+    } else{
+      df.total <- rbind(df.total, mat)
+    }
+  }
+  
+  return(df.total)
+}
+```
+
+Aplicant aquesta funció a la nostra data set anterior:
+
+```{r}
+lymphoma_wlw <- conver_total_time(lymphoma_ag, colID = "id")
+head(lymphoma_wlw)
+```
+
+Un cop tenim les dades en el format adequat, li passem les dades al model:
+
+```{r}
+wlw.fit.total <- coxph(Surv(time, event) ~ as.factor(distrib) + strata(enum) +
+                  cluster(id) , data=subset(lymphoma_wlw, enum<4))
+wlw.fit.total
+```
+```{r}
+plot(survfit(wlw.fit.total), , lty=c(1,2,3)) 
+legend("topright", c("1st recaiguda", "2nd recaiguda", "3rd recaiguda"), lty=c(1,2,3), cex = 0.7)
+```
+
+ - *¿Obtenemos la misma conclusión utilizando los tres modelos? (NOTA: utilice algunas de las funciones que hemos visto en las clases para preparar los datos necesarios).*
+ 
+
+Per veure si els tres modeles presenten resultat semblant, que com podem esperar, el model AG serà diferent dels altres dos ja que aquests últims consideren que els incrementes no son independents. Aleshora, tenim que observar els coeficients dels models:
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+coefs <- rbind(ag.fit$coefficients, pwp.fit$coefficients, wlw.fit.total$coefficients)
+
+rownames(coefs) <- c("AG", "PWP", "WLW")
+colnames(coefs) <- paste0("distrib", 1:3)
+xtable2kable(coefs, caption = "Taula de coeficients dels models AG,PWP-Gap time, WLW",
+      format = "latex")
+```
+
+ 
+ - *Repita los mismos análisis ajustando por sexo y respuesta al tratamiento (variable tt effage). ¿Obtenemos la misma conclusión que en los modelos sin dicho ajuste?*
+
+Ajustem el model AG per sexe i resposta al tractament
+
+```{r}
+ag.fit.adj <- coxph(Surv(start, stop, event) ~ as.factor(distrib)+
+                  cluster(id) + as.factor(sex) + as.factor(effage), data=lymphoma_ag)
+
+ag.fit.adj
+```
+
+```{r}
+pwp.fit.total.adj <- coxph(Surv(start, stop, event) ~ as.factor(distrib) + cluster(id) + strata(enum) +as.factor(sex) + as.factor(effage), data=subset(lymphoma_ag, enum < 4))
+
+pwp.fit.total.adj
+```
+
+Ara fem el mateix per al model PWP-Gap time:
+
+```{r}
+pwp.fit.adj <- coxph(Surv(start, stop, event) ~ as.factor(distrib)+
+                  cluster(id) + strata(enum) + as.factor(sex) + as.factor(effage), data=subset(lymphoma_pwp,enum<4))
+pwp.fit.adj
+```
+
+i pel model WLW:
+
+```{r}
+wlw.fit.total.adj <- coxph(Surv(time, event) ~ as.factor(distrib) + strata(enum) +
+                  cluster(id) + as.factor(sex) + as.factor(effage), data=subset(lymphoma_wlw, enum<4))
+wlw.fit.total.adj
+```
+Ara de la mateixa forma que abans recollim tota la informació en la següent taula:
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+coefs.adj <- rbind(ag.fit.adj$coefficients, pwp.fit.total.adj$coefficients, pwp.fit.adj$coefficients, wlw.fit.total.adj$coefficients)
+
+rownames(coefs.adj) <- c("AG", "PWP-Total", "PWP-Gap", "WLW")
+colnames(coefs.adj) <- c(paste0("distrib", 1:3), "sex2", paste0("effage", c("PR","SD")))
+xtable2kable(coefs.adj, caption = "Taula de coeficients dels models AG,PWP-Gap time, WLW ajustat per sexe i diagnostic", format = "latex")
+```
+Si ajustem per sexe i per el diagnostic, el resultats no son igual que abans, però les relacions sí, en el model AG adjustat es continua mantenint la relacions entre les categories de lessions durant el diagnostic ja que la categoria que presenta més risc respecte les altres és la associada a lesió en més d'un lloc nodal respecte les altres. En canvi, en els altres model, el comportament de que la lesió generalitzada és la que presenta major risc. Per que respecta a les variables ajustades, el sex 2 té un major risc respecte el sexe 1 i el mateix passa pels diagnostics PR i SD respecte CD.
+
+Endemés, en el model PWP-Total time el risc de tindre un diagnostic "PR" disminueix el risc de patir recaiguda respecte la categoria basal.
+
+#### Conclusió
+
+*Sense ajust per covariables*
+
+Els resultats dels models AG, PWP-Gap time, PWP-Total time i WLW mostren diferències en els coeficients de la variable `distrib`. Això indica que el nombre de lesions en el diagnòstic té un efecte significatiu en el temps fins a la recaiguda, però la magnitud d’aquest efecte varia segons el model utilitzat.
+
+*Amb ajust per covariables (sexe i resposta al tractament)*
+
+Després d’ajustar per sexe i resposta al tractament, els coeficients de la variable `distrib` continuen sent significatius, però els seus valors canvien lleugerament. Això suggereix que les covariables addicionals expliquen part de la variabilitat en el temps fins a la recaiguda, però el nombre de lesions continua sent un factor important.
+
+*Comparació de models*
+
+ - Els models AG i PWP-Total time produeixen resultats similars, cosa que indica que l’efecte del nombre de lesions és consistent quan es considera el temps total des de l’inici del seguiment.
+
+ - El model PWP-Gap time mostra diferències més marcades, la qual cosa podria reflectir que el temps entre recaigudes consecutives està influït per altres factors no capturats en el model.
+
+ - El model WLW també mostra resultats similars als models AG i PWP-Total time, cosa que suggereix que l’efecte del nombre de lesions és robust a diferents formulacions temporals.
+
+En conclusió, tots els models coincideixen que el nombre de lesions en el diagnòstic és un predictor significatiu del temps fins a la recaiguda en pacients amb limfoma de grau baix. Tanmateix, la magnitud exacta d’aquest efecte pot variar segons el model i les covariables incloses.
+

@@ -1,0 +1,1258 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Exercici d'events recurrents en R (part II)},
+  pdfauthor={Jose Calatayud Mateu},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Exercici d'events recurrents en R (part II)}
+\author{Jose Calatayud Mateu}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\# Llibreria}
+\FunctionTok{library}\NormalTok{(devtools)}
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\NormalTok{devtools}\SpecialCharTok{::}\FunctionTok{install\_github}\NormalTok{(}\StringTok{"isglobal{-}brge/survrec"}\NormalTok{, }
+                         \AttributeTok{build =} \ConstantTok{FALSE}\NormalTok{)}
+
+\FunctionTok{library}\NormalTok{(survrec)}
+\FunctionTok{library}\NormalTok{(kableExtra)}
+\end{Highlighting}
+\end{Shaded}
+
+Procedim a descarregar manualment l'arxius assosciats als paquet
+``gcmrec'' que està dedicat a funcions de modelatge de models generals
+per events recurrents i el data sobre el qual treballarem ``lymphoma'':
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{source}\NormalTok{(}\AttributeTok{file=}\StringTok{"lymphoma.R"}\NormalTok{)}
+\FunctionTok{source}\NormalTok{(}\AttributeTok{file=}\StringTok{"survrec.R"}\NormalTok{)}
+\FunctionTok{source}\NormalTok{(}\AttributeTok{file=}\StringTok{"gcmrec.R"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+El data ``lymphoma'' contenen els temps de recaiguda del càncer després
+del primer tractamenten pacients diagnosticats amb lymphoma de grau
+baix.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(lymphoma)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   id      time event enum delay age sex distrib effage
+## 1  6  3.900826     0    1    17  79   1       1     CR
+## 2  7 63.173554     0    1    33  25   1       1     CR
+## 3  8 41.289256     0    1    26  37   1       2     CR
+## 4 11 29.421488     1    1    31  43   2       2     CR
+## 5 11 20.826446     1    2    31  43   2       2     CR
+## 6 11 17.950413     0    3    31  43   2       2     CR
+\end{verbatim}
+
+\emph{NOTA}: la variable \emph{time} conté els temps entre
+esdeveniments, \emph{event} és la variable de censura que val 1 per a
+recaigudes de càncer i 0 per al darrer moemnt de seguiment (indicant que
+l'esdeveniment no s'ha observat), i la variable \emph{id} identifica
+cada pacient.
+
+\subsection{Exercici 1:}\label{exercici-1}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{Estime los modelos AG, PWP-Gap time, PWP-Total time y WLW para
+  determinar si existen diferencias en el tiempo de recaída en función
+  del número de lesiones al momento del diagnóstico (variable distrib).
+  NOTA: Deberá crear los marcos de datos adecuados para los modelos
+  PWT-Gap time y WLW.}
+\end{itemize}
+
+Utilizando los datos de lyphoma (package \texttt{gcmrec}), determinar si
+hay diferències en el temps de recaiguida segons el número de lesions al
+diagnóstic (variable \texttt{distrib}). Per dur-ho a terme, es tenen que
+estimar els models AG, PWP-Gap time, PWP-Total time y WLW.
+
+El conjunt de dades contenen les següents variables:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{id}: identificador del pacient
+\item
+  \texttt{time}: temps entre recaiguda
+\item
+  \texttt{event}: variable de censura (1 = recaiguda, 0 = últim
+  seguiment sense observar res).
+\item
+  \texttt{distrib}: nombre de lesions al diagnostic (0 = única, 1 =
+  localitzada, 2 = més d'un lloc nodal, 3 = generalitzada).
+\item
+  \texttt{sex}: sexo del pacient.
+\item
+  \texttt{treat}: resposta al tratament.
+\item
+  \texttt{age}: edat del pacient.
+\end{itemize}
+
+\paragraph{\texorpdfstring{\textbf{Preparar los datos para los
+diferentes
+modelos}}{Preparar los datos para los diferentes modelos}}\label{preparar-los-datos-para-los-diferentes-modelos}
+
+\subparagraph{1. Model AG (Andersen-Gill)}\label{model-ag-andersen-gill}
+
+El model AG és una extensió del model de Cox proporcional de risc per a
+dades d'events recurrents. El seu objectiu és modelar el risc
+d'ocurrència d'un event recurrent, considerant que un subjecte pot
+experimentar múltiples events durant el periode de seguiment. A
+continuació, es detalla la seua estructura i suposits
+
+El model AG asumeix que els events recurrents d'un subjecte segueixen un
+procès de recompte amb increments independents. El risc per al k-èssim
+event del subjecte i es modela com:
+
+\[
+\lambda_k(t;Z_{ik}) = \lambda_0(t) e^{\beta'Z_{it}(t)}
+\] d'on:
+
+\begin{itemize}
+\tightlist
+\item
+  \(\lambda_0(t)\) és la funció de risc basal comú a tots els individus
+\item
+  \(Z_{ik}(t)\) és un vector de covariables per al individu i en el
+  k-èssim event.
+\item
+  \(\beta\) és el vector de paràmetres a estimar
+\end{itemize}
+
+El model AG presenta els següent suposits en la seua construcció:
+
+\begin{itemize}
+\item
+  \emph{Independència dels increments}: El model AG assumeix que els
+  temps entre esdeveniments consecutius son independents. Açò significa
+  que, el risc d'un nou esdeveniment no depen d'esdeveniments previs,
+  almenys que s'incloguen covariables que capturen eixa dependència (per
+  example, el número d'esdeveniments previs com covariable del tipus
+  temps)
+\item
+  \emph{Risc basal comú}: Es usposa que tots els individus comparteixen
+  la mateixa funció de risc basal \(\lambda_0(t)\). Açò pot ser un
+  limitació si el risc basalvaria entre esdeveniments
+\item
+  \emph{Efecte proporcional de les covariables}: Les covariable tenen un
+  efecte multiplicatiu constant sobre el risc, independenment del número
+  d'esdevenimients previs
+\end{itemize}
+
+Per poder dur a terme el model AG, les dades tenen que estar en format
+de recompte, és a dir, que cada fila representa un interval de temps
+entre esdeveniments consecutius i esto ho podem fer amb la funció
+\texttt{getCountingProcess} de la següent manera:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# getCountingProcess: convertir les dades en format de recompte}
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\NormalTok{getCountingProcess }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x, colID, colTime) \{}
+\NormalTok{  id }\OtherTok{\textless{}{-}}\NormalTok{ x[, colID]}
+\NormalTok{  ids }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(id)}
+\NormalTok{  tt }\OtherTok{\textless{}{-}}\NormalTok{ x[,colTime]}
+\NormalTok{  out }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{length}\NormalTok{(ids))\{}
+\NormalTok{    tt.i }\OtherTok{\textless{}{-}}\NormalTok{ tt[id}\SpecialCharTok{\%in\%}\NormalTok{ids[i]]}
+\NormalTok{    start }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, tt.i[}\SpecialCharTok{{-}}\FunctionTok{length}\NormalTok{(tt.i)])}
+\NormalTok{    out.i }\OtherTok{\textless{}{-}} \FunctionTok{cbind}\NormalTok{(start, tt.i)}
+\NormalTok{    out }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(out, out.i)}
+\NormalTok{  \}}
+\NormalTok{  ans }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(x[,colID,}\AttributeTok{drop=}\ConstantTok{TRUE}\NormalTok{],}
+\NormalTok{                    x[,colTime],}\AttributeTok{start=}\NormalTok{out[,}\DecValTok{1}\NormalTok{],}\AttributeTok{stop=}\NormalTok{out[,}\DecValTok{2}\NormalTok{],}
+\NormalTok{                    x }\SpecialCharTok{\%\textgreater{}\%}\NormalTok{ dplyr}\SpecialCharTok{::}\FunctionTok{select}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{c}\NormalTok{(colID, colTime)))}
+  
+  \FunctionTok{names}\NormalTok{(ans)[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{2}\NormalTok{] }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(x[,}\FunctionTok{c}\NormalTok{(colID, colTime)])}
+  \FunctionTok{return}\NormalTok{(ans)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Abans de res, les dades deuen ordenar-se per \texttt{id} i \texttt{time}
+per garantir un anàlisis adequat d'events recurrents:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lymphoma }\OtherTok{\textless{}{-}}\NormalTok{ lymphoma[}\FunctionTok{order}\NormalTok{(lymphoma}\SpecialCharTok{$}\NormalTok{id, lymphoma}\SpecialCharTok{$}\NormalTok{time), ]}
+\end{Highlighting}
+\end{Shaded}
+
+Apliquem la funció \texttt{getCountingProcess} per obtendre el data en
+el format correcte per les meues dades:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Aplicar a les nostres dades}
+\NormalTok{lymphoma\_ag }\OtherTok{\textless{}{-}} \FunctionTok{getCountingProcess}\NormalTok{(lymphoma, }\AttributeTok{colID =} \StringTok{"id"}\NormalTok{, }\AttributeTok{colTime =} \StringTok{"time"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: Using an external vector in selections was deprecated in tidyselect 1.1.0.
+## i Please use `all_of()` or `any_of()` instead.
+##   # Was:
+##   data %>% select(colID)
+## 
+##   # Now:
+##   data %>% select(all_of(colID))
+## 
+## See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: Using an external vector in selections was deprecated in tidyselect 1.1.0.
+## i Please use `all_of()` or `any_of()` instead.
+##   # Was:
+##   data %>% select(colTime)
+## 
+##   # Now:
+##   data %>% select(all_of(colTime))
+## 
+## See <https://tidyselect.r-lib.org/reference/faq-external-vector.html>.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+## generated.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(lymphoma\_ag)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   id      time    start      stop event enum delay age sex distrib effage
+## 1  6  3.900826  0.00000  3.900826     0    1    17  79   1       1     CR
+## 2  7 63.173554  0.00000 63.173554     0    1    33  25   1       1     CR
+## 3  8 41.289256  0.00000 41.289256     0    1    26  37   1       2     CR
+## 6 11 17.950413  0.00000 17.950413     0    3    31  43   2       2     CR
+## 5 11 20.826446 17.95041 20.826446     1    2    31  43   2       2     CR
+## 4 11 29.421488 20.82645 29.421488     1    1    31  43   2       2     CR
+\end{verbatim}
+
+El model AG per avaluar si el número de lesions al diagnóstic s'associa
+amb els temps de recaiguda del càncer després del primer tractamenten
+pacients diagnosticats amb lymphoma de grau baix s'ajusta ampliant el
+model Cox implementat al \texttt{survival} package:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(survival)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Attaching package: 'survival'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:boot':
+## 
+##     aml
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Ajustar el modelo AG}
+\NormalTok{ag\_model }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+} \FunctionTok{cluster}\NormalTok{(id), }\AttributeTok{data =}\NormalTok{ lymphoma\_ag)}
+\FunctionTok{summary}\NormalTok{(ag\_model)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib), 
+##     data = lymphoma_ag, cluster = id)
+## 
+##   n= 110, number of events= 49 
+##    (2 observations deleted due to missingness)
+## 
+##                       coef exp(coef) se(coef) robust se     z Pr(>|z|)   
+## as.factor(distrib)1 1.0304    2.8021   0.4987    0.4801 2.146  0.03187 * 
+## as.factor(distrib)2 1.4776    4.3826   0.5036    0.4775 3.094  0.00197 **
+## as.factor(distrib)3 1.2377    3.4478   0.7400    0.6367 1.944  0.05190 . 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+##                     exp(coef) exp(-coef) lower .95 upper .95
+## as.factor(distrib)1     2.802     0.3569    1.0935      7.18
+## as.factor(distrib)2     4.383     0.2282    1.7189     11.17
+## as.factor(distrib)3     3.448     0.2900    0.9899     12.01
+## 
+## Concordance= 0.632  (se = 0.042 )
+## Likelihood ratio test= 10.98  on 3 df,   p=0.01
+## Wald test            = 9.76  on 3 df,   p=0.02
+## Score (logrank) test = 10  on 3 df,   p=0.02,   Robust = 7.87  p=0.05
+## 
+##   (Note: the likelihood ratio and score tests assume independence of
+##      observations within a cluster, the Wald and robust score tests do not).
+\end{verbatim}
+
+Anem a interpretar els resultats del model AG:
+
+\begin{itemize}
+\item
+  Coeficients: els coeficients estimats \(\beta\) indiquen que l'efecte
+  de cada categoria de \texttt{distrib} sobre el risc de recaiguda.
+\item
+  Exp(coef): És la interpretació en termes de risc relatiu respecte la
+  categoria basal. En el nostre cas, la categoria basal és quan la
+  lessió durant el diagnóstic és única.
+\end{itemize}
+
+Amb els resultat del model, es pot veure que totes les categories de
+lessions durant el diagnostic son covariables significatives excepte la
+generalitzada.
+
+A l'hora d'escollir un model per al temps de recaiguda del cancer, és
+important tenir en compte el procés de la malaltia. Si després de patir
+la primera recaiguda, el riscde la següent pot augmentar, això suggereix
+un model que incorpori una covariable dependent del temps per al nombre
+de recaigudes o utilitzar un model que contingui estrats separats per a
+cada esdeveniment com el model PWP. Tanmateix, si el risc de recaure es
+manté constant independentment del nombre de recaigudes anteriors, el
+model AG seria adequat. Per investigar la dependència dels
+esdeveniments, hem de crear una variable dependent del temps (enum) que
+codifiqui el nombre de recaigudes. Aquesta variable es pot crear
+mitjançant aquesta funció:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# getEnum: indica el número de recaigudes}
+\NormalTok{getEnum }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x, colID) \{}
+\NormalTok{  id }\OtherTok{\textless{}{-}}\NormalTok{ x[, colID]}
+\NormalTok{  ids }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(id)}
+\NormalTok{  out }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\FunctionTok{length}\NormalTok{(ids)) \{}
+\NormalTok{    tt.i }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(id }\SpecialCharTok{\%in\%}\NormalTok{ ids[i])}
+\NormalTok{    out.i }\OtherTok{\textless{}{-}} \DecValTok{1}\SpecialCharTok{:}\NormalTok{tt.i}
+\NormalTok{    out }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(out, out.i)}
+\NormalTok{  \}}
+\NormalTok{  out}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Aleshores, incorporem aquesta variable dependent del temps al model de
+recaigudes per analitzar la dependència entre els temps de recurrència.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lymphoma\_ag}\SpecialCharTok{$}\NormalTok{enum }\OtherTok{\textless{}{-}} \FunctionTok{getEnum}\NormalTok{(lymphoma\_ag, }\AttributeTok{colID=}\DecValTok{1}\NormalTok{)}
+\FunctionTok{head}\NormalTok{(lymphoma\_ag)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   id      time    start      stop event enum delay age sex distrib effage
+## 1  6  3.900826  0.00000  3.900826     0    1    17  79   1       1     CR
+## 2  7 63.173554  0.00000 63.173554     0    1    33  25   1       1     CR
+## 3  8 41.289256  0.00000 41.289256     0    1    26  37   1       2     CR
+## 6 11 17.950413  0.00000 17.950413     0    1    31  43   2       2     CR
+## 5 11 20.826446 17.95041 20.826446     1    2    31  43   2       2     CR
+## 4 11 29.421488 20.82645 29.421488     1    3    31  43   2       2     CR
+\end{verbatim}
+
+Fent el nou model incorporant la covariable \texttt{enum}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ag.fit }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib)}\SpecialCharTok{+}
+                  \FunctionTok{cluster}\NormalTok{(id), }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_ag, enum}\SpecialCharTok{\textless{}}\DecValTok{4}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in Surv(start, stop, event): Stop time must be > start time, NA created
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ag.fit}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib), 
+##     data = subset(lymphoma_ag, enum < 4), cluster = id)
+## 
+##                       coef exp(coef) se(coef) robust se     z       p
+## as.factor(distrib)1 0.9472    2.5784   0.5099    0.5002 1.894 0.05827
+## as.factor(distrib)2 1.3789    3.9704   0.5105    0.4759 2.897 0.00376
+## as.factor(distrib)3 1.4745    4.3689   0.7322    0.7090 2.080 0.03755
+## 
+## Likelihood ratio test=9.68  on 3 df, p=0.02152
+## n= 101, number of events= 43 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ag.fit.dep }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+} \FunctionTok{cluster}\NormalTok{(id) }\SpecialCharTok{+}\NormalTok{ enum, }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_ag, enum }\SpecialCharTok{\textless{}} \DecValTok{4}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in Surv(start, stop, event): Stop time must be > start time, NA created
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ag.fit.dep}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib) + 
+##     enum, data = subset(lymphoma_ag, enum < 4), cluster = id)
+## 
+##                       coef exp(coef) se(coef) robust se     z       p
+## as.factor(distrib)1 0.5944    1.8120   0.5260    0.4383 1.356   0.175
+## as.factor(distrib)2 0.7600    2.1383   0.5450    0.4668 1.628   0.103
+## as.factor(distrib)3 0.7721    2.1644   0.7597    0.5516 1.400   0.162
+## enum                0.8676    2.3812   0.2053    0.2209 3.927 8.6e-05
+## 
+## Likelihood ratio test=27.26  on 4 df, p=1.76e-05
+## n= 101, number of events= 43 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+Incloure la variable dependent del temps que té en compte el nombre de
+recaigudes previs (enum) redueix el valor de l'estadística \(−2logL\)
+(per exemple, la desviació) que mesura la bondat d'ajust d'un model.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{deviance}\FloatTok{.1} \OtherTok{\textless{}{-}} \SpecialCharTok{{-}}\DecValTok{2}\SpecialCharTok{*}\FunctionTok{summary}\NormalTok{(ag.fit)}\SpecialCharTok{$}\NormalTok{loglik[}\DecValTok{2}\NormalTok{] }
+\NormalTok{deviance}\FloatTok{.2} \OtherTok{\textless{}{-}} \SpecialCharTok{{-}}\DecValTok{2}\SpecialCharTok{*}\FunctionTok{summary}\NormalTok{(ag.fit.dep)}\SpecialCharTok{$}\NormalTok{loglik[}\DecValTok{2}\NormalTok{] }
+\FunctionTok{pchisq}\NormalTok{(deviance}\FloatTok{.1} \SpecialCharTok{{-}}\NormalTok{ deviance}\FloatTok{.2}\NormalTok{, }\AttributeTok{df=}\DecValTok{1}\NormalTok{, }\AttributeTok{lower=}\ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 2.747985e-05
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{qchisq}\NormalTok{(}\AttributeTok{p=}\FloatTok{0.95}\NormalTok{, }\AttributeTok{df=}\DecValTok{1}\NormalTok{, }\AttributeTok{lower=}\ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.00393214
+\end{verbatim}
+
+que es estadísticamente significatiu (\(95\%\)).
+
+Per tant, el risc de recaiguda de cancer augmenta un \(70\%\)
+\(exp(0.5337)=1.70\) a mesura que augmenta el nombre recaigudes previes.
+El model AG assumeix una funció de risc de referència comuna per a totes
+les recaigudes. Per tant, podem pensar que utilitzar un model
+estratificat (model PWP) per nombre de recaigudes podria ser més
+apropiat. Això estima el model de temps total PWP, ja que les variables
+d'aturada estan anotades en el temps de calendari.
+
+\subparagraph{2. Model PWP-Total time}\label{model-pwp-total-time}
+
+En l'apartat anterior amb el model AG assumim una funció de risc de
+referència per a totes les recaigudes. Si volem pensar en utilitzar un
+model estratificant pel nombre de recaigudes aleshores el PWP model és
+més apropiat, és a dir, estimant el model de PWP total time fins que
+l'stop variables.
+
+D'aquest forma, el nou model consistirà en la incorporació de la
+variable \texttt{enum} com a estrat dintre del model AG per obtindre el
+model PWP-Total time:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.total }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+} \FunctionTok{cluster}\NormalTok{(id) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(enum), }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_ag, enum }\SpecialCharTok{\textless{}} \DecValTok{4}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in Surv(start, stop, event): Stop time must be > start time, NA created
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.total}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib) + 
+##     strata(enum), data = subset(lymphoma_ag, enum < 4), cluster = id)
+## 
+##                       coef exp(coef) se(coef) robust se     z      p
+## as.factor(distrib)1 0.5890    1.8023   0.5367    0.3874 1.521 0.1284
+## as.factor(distrib)2 0.7086    2.0312   0.5505    0.4286 1.653 0.0982
+## as.factor(distrib)3 0.5210    1.6838   0.7845    0.4616 1.129 0.2590
+## 
+## Likelihood ratio test=1.87  on 3 df, p=0.6009
+## n= 101, number of events= 43 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+Podem observar dels resultat, que cap dels coeficients del model és
+significatiu i que la incorporació per estrats disminueix el risc en
+totes tres categories respecte el model AG.
+
+En canvi, encara que reduisca el risc, el que sí que es pot veure, es
+que es manté la relació de que la lesió en més d'un lloc nodal durant el
+diagnostic continua matinguent un risc superior que en els altres casos.
+
+\subparagraph{3. Model PWP-Gap time}\label{model-pwp-gap-time}
+
+El model PWP-Gap time és una extensió del model de Cox per a
+esdeveniments recurrents que es centra en el temps entre events
+consecutius (gap time). A diferència del model AG, que considera el
+temps total desde el inici de seguiment, el model de PWP-Gap time modela
+el temps entre la ocurrència d'un esdeveniment i el següent. Açò és útil
+quan el risc d'un nou esdevenimient depen del temps transcurrit des de
+l'últim esdeveniment.
+
+El model PWP-Gap time assumeix que els temps entre esdeveniments
+consecutius formen un procés de renovació. El risc per al k-èssim
+esdeveniment del individu \texttt{i} es modela com:
+
+\[
+\lambda_k(t;Z_{ik}) = \lambda_{0k}(t) e^{\beta'Z_{it}(t)}
+\] d'on:
+
+\begin{itemize}
+\tightlist
+\item
+  \(\lambda_{0k}(t)\) és la funció de risc basal per al k-èssim
+  esdeveniment.
+\item
+  \(Z_{ik}(t)\) és un vector de covariables per al individu i en el
+  k-èssim esdeveniment.
+\item
+  \(\beta\) és el vector de paràmetres a estimar.
+\end{itemize}
+
+En aquest model, cada esdeveniment pot tindre la seua propia funció de
+risc basal (\(\lambda_{0k}(t)\)), lo que permiteix capturar diferències
+en el risc entre esdeveniments successius. Endemés, dintre dels seus
+suposits trobem:
+
+\begin{itemize}
+\item
+  \emph{Procés de renovació}: els temps entre esdeveniments consecutius
+  es suposen independents y la distribució del próxim temps entre events
+  depen només del últim esdevenimment.
+\item
+  \emph{Risc basal especific del esdeveniment}: cada esdeveniment pot
+  tindre una funció de risc basal diferent.
+\item
+  \emph{Efecte proporcional de les covariables}: les covariables tenen
+  un efecte multiplicatiu constant sobre el risc, independent del número
+  d'esdeveniments previs.
+\end{itemize}
+
+En el model PWP-Gap time, les dades tenen que estructurar-se en el
+format de temps entre esdeveniments (gap time), és a dir, cada fila té
+que representar el temps transcurrit des de l'últim esdeveniment fins al
+següent. La següent funció ens ajudarà a fer-ho:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{convert\_gap\_time }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(df, colID, colStop, colStart ) \{}
+\NormalTok{  df\_gap }\OtherTok{\textless{}{-}}\NormalTok{ df}
+\NormalTok{  df\_gap }\OtherTok{\textless{}{-}}\NormalTok{ df[}\FunctionTok{order}\NormalTok{(df[[colID]], df[[colStop]]), ]  }\CommentTok{\# ordenar per individu i temps}
+
+  \CommentTok{\# Inicialitzar nova columna \textquotesingle{}gap\_time\textquotesingle{}}
+\NormalTok{  df\_gap}\SpecialCharTok{$}\NormalTok{gap\_stop }\OtherTok{\textless{}{-}} \ConstantTok{NA}
+
+\NormalTok{  ids }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(df[[colID]])}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in}\NormalTok{ ids) \{}
+\NormalTok{    idx }\OtherTok{\textless{}{-}} \FunctionTok{which}\NormalTok{(df[[colID]] }\SpecialCharTok{==}\NormalTok{ i)}
+\NormalTok{    n }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(idx)}
+
+    \CommentTok{\# Calcular temps entre esdeveniments consecutius}
+\NormalTok{    times }\OtherTok{\textless{}{-}}\NormalTok{ df[[colStop]][idx]}
+\NormalTok{    gaps }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(times[}\DecValTok{1}\NormalTok{], }\FunctionTok{diff}\NormalTok{(times))}
+\NormalTok{    df\_gap}\SpecialCharTok{$}\NormalTok{gap\_stop[idx] }\OtherTok{\textless{}{-}}\NormalTok{ gaps}
+\NormalTok{  \}}
+
+\NormalTok{  df\_gap}\SpecialCharTok{$}\NormalTok{start }\OtherTok{\textless{}{-}} \DecValTok{0}
+\NormalTok{  df\_gap}\SpecialCharTok{$}\NormalTok{stop }\OtherTok{\textless{}{-}}\NormalTok{ df\_gap}\SpecialCharTok{$}\NormalTok{gap\_stop}
+\NormalTok{  df\_gap}\SpecialCharTok{$}\NormalTok{gap\_stop }\OtherTok{\textless{}{-}} \ConstantTok{NULL}  \CommentTok{\# opcional: eliminar columna auxiliar}
+
+  \FunctionTok{return}\NormalTok{(df\_gap)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Aplicant la funció a les nostres dades per obtindre el format correcte:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lymphoma\_pwp }\OtherTok{\textless{}{-}} \FunctionTok{convert\_gap\_time}\NormalTok{(lymphoma\_ag, }\AttributeTok{colID =} \StringTok{"id"}\NormalTok{, }\AttributeTok{colStop =} \StringTok{"stop"}\NormalTok{, }\AttributeTok{colStart =} \StringTok{"start"}\NormalTok{)}
+\FunctionTok{head}\NormalTok{(lymphoma\_pwp)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   id      time start      stop event enum delay age sex distrib effage
+## 1  6  3.900826     0  3.900826     0    1    17  79   1       1     CR
+## 2  7 63.173554     0 63.173554     0    1    33  25   1       1     CR
+## 3  8 41.289256     0 41.289256     0    1    26  37   1       2     CR
+## 6 11 17.950413     0 17.950413     0    1    31  43   2       2     CR
+## 5 11 20.826446     0  2.876033     1    2    31  43   2       2     CR
+## 4 11 29.421488     0  8.595041     1    3    31  43   2       2     CR
+\end{verbatim}
+
+Ara, realitzem el model PWP-Gap time amb les dades en el format adequat:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib)}\SpecialCharTok{+}
+                  \FunctionTok{cluster}\NormalTok{(id) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(enum), }\AttributeTok{data=}\NormalTok{lymphoma\_pwp)}
+\NormalTok{pwp.fit}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib) + 
+##     strata(enum), data = lymphoma_pwp, cluster = id)
+## 
+##                       coef exp(coef) se(coef) robust se     z       p
+## as.factor(distrib)1 0.7856    2.1937   0.5161    0.3363 2.336 0.01949
+## as.factor(distrib)2 1.0536    2.8680   0.5235    0.3416 3.085 0.00204
+## as.factor(distrib)3 0.5410    1.7177   0.7741    0.4099 1.320 0.18690
+## 
+## Likelihood ratio test=4.9  on 3 df, p=0.1789
+## n= 110, number of events= 49 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+I amb el model PWP-Gap time també podem obtindre coeficients de
+regressió per estrat, de la següent manera:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.strata }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib)}\SpecialCharTok{*} \FunctionTok{strata}\NormalTok{(enum) }\SpecialCharTok{+}
+                  \FunctionTok{cluster}\NormalTok{(id), }\AttributeTok{data=}\NormalTok{lymphoma\_pwp)}
+\NormalTok{pwp.fit.strata}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib) + 
+##     strata(enum) + as.factor(distrib):strata(enum), data = lymphoma_pwp, 
+##     cluster = id)
+## 
+##                                              coef  exp(coef)   se(coef)
+## as.factor(distrib)1                     1.074e+00  2.927e+00  8.168e-01
+## as.factor(distrib)2                     1.365e+00  3.916e+00  8.666e-01
+## as.factor(distrib)3                     1.616e+00  5.034e+00  1.233e+00
+## as.factor(distrib)1:strata(enum)enum=2 -5.036e-01  6.043e-01  1.070e+00
+## as.factor(distrib)2:strata(enum)enum=2 -7.492e-01  4.728e-01  1.111e+00
+## as.factor(distrib)3:strata(enum)enum=2 -5.350e-01  5.857e-01  1.706e+00
+## as.factor(distrib)1:strata(enum)enum=3  8.891e-01  2.433e+00  1.577e+00
+## as.factor(distrib)2:strata(enum)enum=3  9.003e-01  2.460e+00  1.579e+00
+## as.factor(distrib)3:strata(enum)enum=3         NA         NA  0.000e+00
+## as.factor(distrib)1:strata(enum)enum=4  1.784e+01  5.605e+07  5.003e+03
+## as.factor(distrib)2:strata(enum)enum=4  1.945e+01  2.809e+08  5.003e+03
+## as.factor(distrib)3:strata(enum)enum=4         NA         NA  0.000e+00
+##                                         robust se      z      p
+## as.factor(distrib)1                     7.872e-01  1.364 0.1725
+## as.factor(distrib)2                     8.264e-01  1.652 0.0986
+## as.factor(distrib)3                     1.283e+00  1.260 0.2078
+## as.factor(distrib)1:strata(enum)enum=2  1.189e+00 -0.424 0.6718
+## as.factor(distrib)2:strata(enum)enum=2  1.273e+00 -0.588 0.5562
+## as.factor(distrib)3:strata(enum)enum=2  1.539e+00 -0.348 0.7282
+## as.factor(distrib)1:strata(enum)enum=3  1.408e+00  0.631 0.5278
+## as.factor(distrib)2:strata(enum)enum=3  1.390e+00  0.648 0.5172
+## as.factor(distrib)3:strata(enum)enum=3  0.000e+00     NA     NA
+## as.factor(distrib)1:strata(enum)enum=4  2.080e+00  8.579 <2e-16
+## as.factor(distrib)2:strata(enum)enum=4  2.211e+00  8.798 <2e-16
+## as.factor(distrib)3:strata(enum)enum=4  0.000e+00     NA     NA
+## 
+## Likelihood ratio test=10.5  on 10 df, p=0.3981
+## n= 110, number of events= 49 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+Cal tenir en compte que els coeficients d'algunes covariables no es
+poden estimar. Si el nombre de subjectes disminueix a mesura que
+augmenta \(k\) (esdeveniment), no es poden obtenir estimacions de
+coeficients estables per a aquests rangs més alts, \(k\), de recaigudes.
+Veiem que, els únics valors on el model no té la capacitat d'obtindre
+els NA son en la categoria de lessió generalitzada quan el nombre de
+racaigudes és superior a 2. Per solventar aquesta problema podem limitar
+el nombre de recaigudes a 3 i que el model sí tinga la capacitat de
+ajustar correctament els coeficients, com es mostra:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.strata}\FloatTok{.3} \OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(enum) }\SpecialCharTok{+}
+                  \FunctionTok{cluster}\NormalTok{(id) , }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_pwp, enum}\SpecialCharTok{\textless{}}\DecValTok{3}\NormalTok{))}
+\NormalTok{pwp.fit.strata}\FloatTok{.3}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib) + 
+##     strata(enum), data = subset(lymphoma_pwp, enum < 3), cluster = id)
+## 
+##                       coef exp(coef) se(coef) robust se     z       p
+## as.factor(distrib)1 0.8033    2.2330   0.5273    0.3754 2.140 0.03235
+## as.factor(distrib)2 0.9333    2.5430   0.5477    0.3492 2.673 0.00752
+## as.factor(distrib)3 1.3328    3.7916   0.8482    0.6001 2.221 0.02636
+## 
+## Likelihood ratio test=4.36  on 3 df, p=0.2255
+## n= 87, number of events= 32 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+Les funcions de supervivència de referència es podem estimar i
+representar gràficament:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.strata}\FloatTok{.3} \OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(enum) }\SpecialCharTok{+} \FunctionTok{cluster}\NormalTok{(id),}\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_pwp, enum}\SpecialCharTok{\textless{}}\DecValTok{4}\NormalTok{))}
+
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{survfit}\NormalTok{(pwp.fit.strata}\FloatTok{.3}\NormalTok{),}\AttributeTok{lty=}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{3}\NormalTok{))}
+\FunctionTok{legend}\NormalTok{(}\StringTok{"topright"}\NormalTok{, }\FunctionTok{c}\NormalTok{(}\StringTok{"1st recaiguda"}\NormalTok{, }\StringTok{"2nd recaiguda"}\NormalTok{, }\StringTok{"3rd recaiguda"}\NormalTok{), }\AttributeTok{lty=}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{3}\NormalTok{), }\AttributeTok{cex =} \FloatTok{0.7}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{events_recu_partII_files/figure-latex/unnamed-chunk-18-1.pdf}
+gráficament, es pot observar les mateixes conclusions que hem deduït en
+el model AG i la necessitat d'estratificar pel nombre de recaigudes
+previes. Ací, s'observa que les estimacions de les funcions de
+supervivència disminueixen significativament després de la primera
+recaiguda al llarg del temps. Veiem que aquells individus que presenten
+més d'una recaiguda la seua supervivència es prou inferior a aquells que
+només experimenten una.
+
+Podem veure com afecta al nombre de lessions del model AG:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ag.fit }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+}
+                      \FunctionTok{cluster}\NormalTok{(id), }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_ag, enum}\SpecialCharTok{\textless{}}\DecValTok{4}\NormalTok{))}
+
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{survfit}\NormalTok{(ag.fit.dep), }\AttributeTok{lty=}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{4}\NormalTok{)) }
+\FunctionTok{legend}\NormalTok{(}\StringTok{"bottomleft"}\NormalTok{, }\FunctionTok{c}\NormalTok{(}\StringTok{"localitzada"}\NormalTok{, }\StringTok{"\textgreater{} 1 lloc nodal"}\NormalTok{, }\StringTok{"generalitzada"}\NormalTok{), }\AttributeTok{lty=}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{4}\NormalTok{), }\AttributeTok{cex =} \FloatTok{0.7}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{events_recu_partII_files/figure-latex/unnamed-chunk-19-1.pdf}
+
+Veiem que, quan els individus presenten lessions en més d'un lloc nodal,
+la seua funció de supervivència decau més rapidament que en els altres
+condicions. Endemés, si presenta una lessió generalitzada, la seua
+funció de supervivència és la més elevada, inclús al llarg del temps
+experimenta un petit increment. Encara que en es altre casos açò no
+passa.
+
+\paragraph{3. Model WLW (Wei, Lin y
+Weisfeld)}\label{model-wlw-wei-lin-y-weisfeld}
+
+El model WLW és una extensió del model de COx per a esdeveniments
+recurrents que permiteix utilitzar dades amb múltiples temps de fallada
+incomplets. A diferència dels models AG i PWP, que es centren en el
+procés de recompte o el temps entre esdeveniments, de model WLW modela
+la distribució marginal de cada esdeveniment recurrent, permitint que
+cada esdeveniment tinga la seua propia funció de risc basal.
+
+El model assumeix que la funció de risc per a k-èssim esdeveniment del
+individu i és:
+
+\[
+\lambda_k(t;Z_{ik}) = \lambda_{0k}(t) e^{\beta'Z_{it}(t)}
+\] d'on:
+
+\begin{itemize}
+\tightlist
+\item
+  \(\lambda_{0k}(t)\) és la funció de risc basal per al k-èssim
+  esdeveniment.
+\item
+  \(Z_{ik}(t)\) és un vector de covariables per al individu i en el
+  k-èssim esdeveniment.
+\item
+  \(\beta\) és el vector de paràmetres a estimar.
+\end{itemize}
+
+En aquest model, cada esdeveniment pot tindre la seua propia funció de
+risc basal (\(\lambda_{0k}(t)\)), lo que permiteix capturar diferències
+en el risc entre esdeveniments successius. Endemés, dintre dels seus
+suposits trobem:
+
+\begin{itemize}
+\item
+  \emph{Indepència condicional}: els temps entre esdeveniments
+  recurrents son independents condicionalment a les covariables
+\item
+  \emph{Risc basal especific del esdeveniment}: cada esdeveniment pot
+  tindre una funció de risc basal diferent.
+\item
+  \emph{Efecte proporcional de les covariables}: les covariables tenen
+  un efecte multiplicatiu constant sobre el risc, independent del número
+  d'esdeveniments previs.
+\end{itemize}
+
+En el model WLW, les dades tenen que estructurar-se en el format de
+temps total des de l'inici, és a dir, cada fila té que representar el
+temps transcurrit des de l'últim esdeveniment fins al següent i que cada
+pacient tinga el mateix nombre d'entrades. Per example podem fixar el
+nombre de recaigudes a 3, però els casos que presenten menys, tenim que
+duplicar-les. La següent funció ens dona el data ven estructurat
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{conver\_total\_time }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(df, colID, }\AttributeTok{lim=}\DecValTok{3}\NormalTok{)\{}
+\NormalTok{  df.total }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+\NormalTok{  ids }\OtherTok{\textless{}{-}} \FunctionTok{unique}\NormalTok{(df[[colID]])}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in}\NormalTok{ ids)\{}
+\NormalTok{    aux }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(df[colID]}\SpecialCharTok{==}\NormalTok{i)}
+\NormalTok{    mat }\OtherTok{\textless{}{-}}\NormalTok{ df[df[,colID]}\SpecialCharTok{==}\NormalTok{i, ]}
+    
+    \ControlFlowTok{if}\NormalTok{(aux }\SpecialCharTok{\textless{}}\NormalTok{ lim)\{}
+\NormalTok{      df.total }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(df.total, mat)}
+\NormalTok{      ultima }\OtherTok{\textless{}{-}}\NormalTok{ mat[aux,]}
+      \ControlFlowTok{while}\NormalTok{(aux }\SpecialCharTok{\textless{}}\NormalTok{ lim)\{}
+\NormalTok{        df.total }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(df.total, ultima)}
+\NormalTok{        aux }\OtherTok{\textless{}{-}}\NormalTok{ aux }\SpecialCharTok{+}\DecValTok{1}
+\NormalTok{      \}}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{\{}
+\NormalTok{      df.total }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(df.total, mat)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  
+  \FunctionTok{return}\NormalTok{(df.total)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Aplicant aquesta funció a la nostra data set anterior:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lymphoma\_wlw }\OtherTok{\textless{}{-}} \FunctionTok{conver\_total\_time}\NormalTok{(lymphoma\_ag, }\AttributeTok{colID =} \StringTok{"id"}\NormalTok{)}
+\FunctionTok{head}\NormalTok{(lymphoma\_wlw)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    id      time start      stop event enum delay age sex distrib effage
+## 1   6  3.900826     0  3.900826     0    1    17  79   1       1     CR
+## 11  6  3.900826     0  3.900826     0    1    17  79   1       1     CR
+## 12  6  3.900826     0  3.900826     0    1    17  79   1       1     CR
+## 2   7 63.173554     0 63.173554     0    1    33  25   1       1     CR
+## 21  7 63.173554     0 63.173554     0    1    33  25   1       1     CR
+## 22  7 63.173554     0 63.173554     0    1    33  25   1       1     CR
+\end{verbatim}
+
+Un cop tenim les dades en el format adequat, li passem les dades al
+model:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wlw.fit.total }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(time, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(enum) }\SpecialCharTok{+}
+                  \FunctionTok{cluster}\NormalTok{(id) , }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_wlw, enum}\SpecialCharTok{\textless{}}\DecValTok{4}\NormalTok{))}
+\NormalTok{wlw.fit.total}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(time, event) ~ as.factor(distrib) + strata(enum), 
+##     data = subset(lymphoma_wlw, enum < 4), cluster = id)
+## 
+##                       coef exp(coef) se(coef) robust se     z      p
+## as.factor(distrib)1 0.5564    1.7443   0.4378    0.4332 1.284 0.1991
+## as.factor(distrib)2 0.7496    2.1162   0.4366    0.4616 1.624 0.1043
+## as.factor(distrib)3 0.9701    2.6382   0.7023    0.5445 1.782 0.0748
+## 
+## Likelihood ratio test=3.68  on 3 df, p=0.2976
+## n= 189, number of events= 51
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{survfit}\NormalTok{(wlw.fit.total), , }\AttributeTok{lty=}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{3}\NormalTok{)) }
+\FunctionTok{legend}\NormalTok{(}\StringTok{"topright"}\NormalTok{, }\FunctionTok{c}\NormalTok{(}\StringTok{"1st recaiguda"}\NormalTok{, }\StringTok{"2nd recaiguda"}\NormalTok{, }\StringTok{"3rd recaiguda"}\NormalTok{), }\AttributeTok{lty=}\FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{3}\NormalTok{), }\AttributeTok{cex =} \FloatTok{0.7}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{events_recu_partII_files/figure-latex/unnamed-chunk-23-1.pdf}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{¿Obtenemos la misma conclusión utilizando los tres modelos?
+  (NOTA: utilice algunas de las funciones que hemos visto en las clases
+  para preparar los datos necesarios).}
+\end{itemize}
+
+Per veure si els tres modeles presenten resultat semblant, que com podem
+esperar, el model AG serà diferent dels altres dos ja que aquests últims
+consideren que els incrementes no son independents. Aleshora, tenim que
+observar els coeficients dels models:
+
+\begin{verbatim}
+##      distrib1  distrib2  distrib3
+## AG  0.9471567 1.3788592 1.4745074
+## PWP 0.7855832 1.0536113 0.5409816
+## WLW 0.5563699 0.7496388 0.9700970
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{Repita los mismos análisis ajustando por sexo y respuesta al
+  tratamiento (variable tt effage). ¿Obtenemos la misma conclusión que
+  en los modelos sin dicho ajuste?}
+\end{itemize}
+
+Ajustem el model AG per sexe i resposta al tractament
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ag.fit.adj }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib)}\SpecialCharTok{+}
+                  \FunctionTok{cluster}\NormalTok{(id) }\SpecialCharTok{+} \FunctionTok{as.factor}\NormalTok{(sex) }\SpecialCharTok{+} \FunctionTok{as.factor}\NormalTok{(effage), }\AttributeTok{data=}\NormalTok{lymphoma\_ag)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in Surv(start, stop, event): Stop time must be > start time, NA created
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ag.fit.adj}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib) + 
+##     as.factor(sex) + as.factor(effage), data = lymphoma_ag, cluster = id)
+## 
+##                       coef exp(coef) se(coef) robust se     z        p
+## as.factor(distrib)1 1.5476    4.7002   0.5615    0.5577 2.775 0.005521
+## as.factor(distrib)2 1.9322    6.9049   0.5684    0.5412 3.570 0.000356
+## as.factor(distrib)3 1.7824    5.9443   0.8121    0.7884 2.261 0.023768
+## as.factor(sex)2     0.6861    1.9859   0.3391    0.3489 1.966 0.049253
+## as.factor(effage)PR 0.1912    1.2107   0.5122    0.5765 0.332 0.740147
+## as.factor(effage)SD 1.6751    5.3395   1.0906    1.2208 1.372 0.170029
+## 
+## Likelihood ratio test=17.03  on 6 df, p=0.009187
+## n= 110, number of events= 49 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.total.adj }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+} \FunctionTok{cluster}\NormalTok{(id) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(enum) }\SpecialCharTok{+}\FunctionTok{as.factor}\NormalTok{(sex) }\SpecialCharTok{+} \FunctionTok{as.factor}\NormalTok{(effage), }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_ag, enum }\SpecialCharTok{\textless{}} \DecValTok{4}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in Surv(start, stop, event): Stop time must be > start time, NA created
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.total.adj}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib) + 
+##     strata(enum) + as.factor(sex) + as.factor(effage), data = subset(lymphoma_ag, 
+##     enum < 4), cluster = id)
+## 
+##                           coef  exp(coef)   se(coef)  robust se     z      p
+## as.factor(distrib)1  1.0962060  2.9927897  0.6146930  0.4921437 2.227 0.0259
+## as.factor(distrib)2  1.2301217  3.4216458  0.6299074  0.4870274 2.526 0.0115
+## as.factor(distrib)3  1.1911575  3.2908881  0.8730001  0.5998920 1.986 0.0471
+## as.factor(sex)2      0.6219273  1.8625142  0.3895888  0.2814146 2.210 0.0271
+## as.factor(effage)PR -0.0001036  0.9998964  0.5949579  0.5701175 0.000 0.9999
+## as.factor(effage)SD  1.9308135  6.8951170  1.1228109  1.1719176 1.648 0.0994
+## 
+## Likelihood ratio test=6.37  on 6 df, p=0.3832
+## n= 101, number of events= 43 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+Ara fem el mateix per al model PWP-Gap time:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.adj }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(start, stop, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib)}\SpecialCharTok{+}
+                  \FunctionTok{cluster}\NormalTok{(id) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(enum) }\SpecialCharTok{+} \FunctionTok{as.factor}\NormalTok{(sex) }\SpecialCharTok{+} \FunctionTok{as.factor}\NormalTok{(effage), }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_pwp,enum}\SpecialCharTok{\textless{}}\DecValTok{4}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in Surv(start, stop, event): Stop time must be > start time, NA created
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pwp.fit.adj}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(start, stop, event) ~ as.factor(distrib) + 
+##     strata(enum) + as.factor(sex) + as.factor(effage), data = subset(lymphoma_pwp, 
+##     enum < 4), cluster = id)
+## 
+##                       coef exp(coef) se(coef) robust se     z        p
+## as.factor(distrib)1 1.2229    3.3972   0.5886    0.4033 3.032 0.002426
+## as.factor(distrib)2 1.3379    3.8110   0.5991    0.3988 3.355 0.000794
+## as.factor(distrib)3 1.5677    4.7958   0.8543    0.5732 2.735 0.006233
+## as.factor(sex)2     0.4673    1.5957   0.3699    0.2520 1.854 0.063695
+## as.factor(effage)PR 0.4835    1.6217   0.5552    0.5891 0.821 0.411857
+## as.factor(effage)SD 2.1222    8.3491   1.1235    1.0903 1.946 0.051598
+## 
+## Likelihood ratio test=8.54  on 6 df, p=0.2012
+## n= 101, number of events= 43 
+##    (2 observations deleted due to missingness)
+\end{verbatim}
+
+i pel model WLW:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wlw.fit.total.adj }\OtherTok{\textless{}{-}} \FunctionTok{coxph}\NormalTok{(}\FunctionTok{Surv}\NormalTok{(time, event) }\SpecialCharTok{\textasciitilde{}} \FunctionTok{as.factor}\NormalTok{(distrib) }\SpecialCharTok{+} \FunctionTok{strata}\NormalTok{(enum) }\SpecialCharTok{+}
+                  \FunctionTok{cluster}\NormalTok{(id) }\SpecialCharTok{+} \FunctionTok{as.factor}\NormalTok{(sex) }\SpecialCharTok{+} \FunctionTok{as.factor}\NormalTok{(effage), }\AttributeTok{data=}\FunctionTok{subset}\NormalTok{(lymphoma\_wlw, enum}\SpecialCharTok{\textless{}}\DecValTok{4}\NormalTok{))}
+\NormalTok{wlw.fit.total.adj}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Call:
+## coxph(formula = Surv(time, event) ~ as.factor(distrib) + strata(enum) + 
+##     as.factor(sex) + as.factor(effage), data = subset(lymphoma_wlw, 
+##     enum < 4), cluster = id)
+## 
+##                        coef exp(coef) se(coef) robust se     z      p
+## as.factor(distrib)1  1.1442    3.1398   0.5330    0.6565 1.743 0.0814
+## as.factor(distrib)2  1.2130    3.3636   0.5072    0.5915 2.051 0.0403
+## as.factor(distrib)3  1.7193    5.5807   0.7849    0.8253 2.083 0.0372
+## as.factor(sex)2      0.6673    1.9489   0.3723    0.4667 1.430 0.1528
+## as.factor(effage)PR  0.6060    1.8331   0.5437    0.5242 1.156 0.2477
+## as.factor(effage)SD  2.7671   15.9119   1.1039    1.1897 2.326 0.0200
+## 
+## Likelihood ratio test=11.12  on 6 df, p=0.08479
+## n= 189, number of events= 51
+\end{verbatim}
+
+Ara de la mateixa forma que abans recollim tota la informació en la
+següent taula:
+
+\begin{verbatim}
+##           distrib1 distrib2 distrib3      sex2      effagePR effageSD
+## AG        1.547615 1.932237 1.782433 0.6860770  0.1911997164 1.675123
+## PWP-Total 1.096206 1.230122 1.191157 0.6219273 -0.0001036279 1.930813
+## PWP-Gap   1.222941 1.337894 1.567747 0.4673196  0.4834619590 2.122156
+## WLW       1.144171 1.213006 1.719320 0.6672706  0.6060317095 2.767069
+\end{verbatim}
+
+Si ajustem per sexe i per el diagnostic, el resultats no son igual que
+abans, però les relacions sí, en el model AG adjustat es continua
+mantenint la relacions entre les categories de lessions durant el
+diagnostic ja que la categoria que presenta més risc respecte les altres
+és la associada a lesió en més d'un lloc nodal respecte les altres. En
+canvi, en els altres model, el comportament de que la lesió
+generalitzada és la que presenta major risc. Per que respecta a les
+variables ajustades, el sex 2 té un major risc respecte el sexe 1 i el
+mateix passa pels diagnostics PR i SD respecte CD.
+
+Endemés, en el model PWP-Total time el risc de tindre un diagnostic
+``PR'' disminueix el risc de patir recaiguda respecte la categoria
+basal.
+
+\paragraph{Conclusió}\label{conclusiuxf3}
+
+\emph{Sense ajust per covariables}
+
+Els resultats dels models AG, PWP-Gap time, PWP-Total time i WLW mostren
+diferències en els coeficients de la variable \texttt{distrib}. Això
+indica que el nombre de lesions en el diagnòstic té un efecte
+significatiu en el temps fins a la recaiguda, però la magnitud d'aquest
+efecte varia segons el model utilitzat.
+
+\emph{Amb ajust per covariables (sexe i resposta al tractament)}
+
+Després d'ajustar per sexe i resposta al tractament, els coeficients de
+la variable \texttt{distrib} continuen sent significatius, però els seus
+valors canvien lleugerament. Això suggereix que les covariables
+addicionals expliquen part de la variabilitat en el temps fins a la
+recaiguda, però el nombre de lesions continua sent un factor important.
+
+\emph{Comparació de models}
+
+\begin{itemize}
+\item
+  Els models AG i PWP-Total time produeixen resultats similars, cosa que
+  indica que l'efecte del nombre de lesions és consistent quan es
+  considera el temps total des de l'inici del seguiment.
+\item
+  El model PWP-Gap time mostra diferències més marcades, la qual cosa
+  podria reflectir que el temps entre recaigudes consecutives està
+  influït per altres factors no capturats en el model.
+\item
+  El model WLW també mostra resultats similars als models AG i PWP-Total
+  time, cosa que suggereix que l'efecte del nombre de lesions és robust
+  a diferents formulacions temporals.
+\end{itemize}
+
+En conclusió, tots els models coincideixen que el nombre de lesions en
+el diagnòstic és un predictor significatiu del temps fins a la recaiguda
+en pacients amb limfoma de grau baix. Tanmateix, la magnitud exacta
+d'aquest efecte pot variar segons el model i les covariables incloses.
+
+\end{document}

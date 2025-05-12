@@ -1,0 +1,130 @@
+---
+title: "Exercici d'events recurrents en R (part II)"
+author: "Jose Calatayud Mateu"
+date: "2025-04-21"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Llibreries
+library(devtools)
+library(tidyverse)
+library(ggplot2)
+
+devtools::install_github("isglobal-brge/TestSurvRec")
+library("TestSurvRec")
+
+devtools::install_github("isglobal-brge/survrec", build = FALSE)
+library(survrec)
+```
+
+Procedim a descarregar manualment l'arxius assosciats als paquet "gcmrec" que està dedicat a funcions de modelatge de models generals per events recurrents i el data sobre el qual treballarem "lymphoma":
+
+```{r}
+source(file="lymphoma.R")
+source(file="survrec.R")
+source(file="gcmrec.R")
+```
+
+El data "lymphoma" contenen els temps de recaiguda del càncer després del primer tractamenten pacients diagnosticats amb limfoma de grau baix.
+
+```{r}
+head(lymphoma)
+```
+
+
+## Exercici 2: Comparación de Curvas de Supervivencia
+
+ - *Investiga com el paquet TestSurvRec compara completament dues corbes de supervivència (mira Secció de Referències d'ambdues paquets i el manuscrit describint com funciona)*
+
+El paquet `TestSurvRec` proporciona mètodes para comparar dues corbes de supervivència en situacions de events recurrents. 
+
+El paquet consta de les següents funciones entre altres bases de datos:
+
+ - Dif.Surv.Rec
+ - Plot.Data.Events
+ - Plot.Data.Rec
+ - Plot.Surv.Rec
+ - Print-Summary
+
+La función principal `Dif.Surv.Rec` implementa un procedimiento de prueba robusto que tiene en cuenta la correlación entre eventos recurrentes del mismo individuo. Utiliza un enfoque de proceso de conteo y calcula una estadística de prueba basada en la diferencia entre las dos curvas de supervivencia estimadas, considerando todo el período de seguimiento.
+
+Todas las funciones trabajan con una estructura de data type de eventos recurentes que incorpora una variable `group` indicadora del tratamiento al que pertenecen. Así, modificamos la base de lyphoma para poder trabajar correctamente con el grupo de interés que se desea comparar:
+
+```{r}
+lymphoma_sex<- lymphoma %>% 
+  mutate("group" = sex %>% as.factor)  
+
+Plot.Surv.Rec(lymphoma_sex)
+plot(1:10, 2:11)
+```
+En la representació anterior, es mostren les gràfiques de les corbes de supervivència estimades de l'objecte de classe TestSurvRec. Les corbes de supervivència de ambdues grups son estimats mitjançant el mètode PHS del paquet `survrec` asuming que els temps inter-ocurrències son independents. Endemès, també plotetja la corba de supervivència pooled, sense distinguir entre classes de sexe.
+
+ - *Utilitzant aquest mètode:*
+
+_NOTA: la variable distrib codifica les lesions relacionades amb el diagnostic en 4 categories (0=Single, 1=Localized, 2=More than one nodal site, 3=Generalized)_
+ 
+  - *Compara el número de vegades en recaiguda de cancer entre homes i dones (variable sex)*
+  
+Per tant, es comperen els temps de recaiguda entre homes (sex=1) y mujeres (sex=0). Abans de res, plotejem 
+
+```{r}
+Dif.Surv.Rec(lymphoma_sex, "all")
+```
+Aquesta funció conté tests per comparar corbes de supervivència amb events recurrents utilitzant l'estimador PSH. La funció retorna diferents tests que depenen dels pesos que asignen així la selecció apropiada dels pesos en l'anàlisi de supervivència depèn del comportament de les seves corbes. Amb l'elecció dels valors dels paràmetres $(\alpha, \beta, \gamma; \text{ i } \eta)$ en la nostra proposta, l'estadístic és capaç d'ajustar-se a aquest comportament.
+
+Amb aquesta proposta, es poden dur a terme estudis d'anàlisi de supervivència amb esdeveniments recurrents i generar proves per a altres tipus d'anàlisi, incloent-hi els tests clàssics com: **logrank**, **Gehan**, **Peto-Peto**, **Fleming-Harrington**, entre d'altres.
+
+Observem que, si tots els paràmetres de l'estadístic són zero, aleshores $w_z = 1$, la qual cosa genera el test **logrank** per a l'anàlisi amb esdeveniments recurrents (és el que la funció retorna per defecte).
+
+Si $\alpha = 1$ i la resta de paràmetres són zero, llavors $w_z = Y(s, z)$, el que correspon al test **Gehan**.
+
+Si $\gamma = 1$ i els altres paràmetres són zero, llavors $w_z = S(z)$, el que dóna lloc al test de **Peto-Peto**.
+
+Finalment, si $\gamma = 1$, $\eta = 1$ i els altres paràmetres són zero, s’obté el test de **Fleming-Harrington**.
+
+Per tal que l’estadístic pugui generar els tests de l’anàlisi de supervivència clàssica, totes les unitats d’estudi han d’experimentar només un esdeveniment o una censura.
+
+En la proposta, l’estadístic de comparació per a esdeveniments recurrents depèn dels processos de recompte $N$ i $Y$, tots dos indexats doblement. Amb l’índex $s$ mesurem el temps de calendari, i amb l’índex $z$ mesurem els temps entre esdeveniments (gap times).
+
+Per tant, si el temps d’observació tendeix a infinit i l’esdeveniment només pot ocórrer una vegada per unitat, el test de comparació de la proposta esdevé el test clàssic ponderat de comparació de grups en l’anàlisi de supervivència.
+
+Aleshores, com que la hipòtesis del model son:
+
+$$
+\text{H}_0 : \text{S}_1(t) = \text{S}_2(t) \\
+\text{H}_0 : \text{S}_1(t) \ne \text{S}_2(t) \\
+$$
+Independement del test aplicat, tots ells presenten un $\text{p-value}>0.05$ aleshores no hi ha evidència estadística per rebutjar la hipòtesi nul·la d'igualtat de corbes de supervivència. 
+  
+  - *Compara el número de vegades en recaiguda de cancer entre pacients tenint lesions úniques i lesions localitzades (variable distrib)*
+  
+De la mateixa forma que en l'exercici anterior, creem una nova variable grup per distrib però filtrem només els casos en que son lesions úniques i lesions localitzades
+
+```{r}
+lymphoma_distrib1 <- lymphoma %>% 
+  filter(distrib==0 | distrib==1) %>% 
+  mutate(group=distrib)
+
+Dif.Surv.Rec(lymphoma_distrib1, "all")
+```
+En cap dels test aplicat, no hi ha evidència estadística suficient per un nivell de significació del $95\%$ per rebutjar la hipòtesi nul·la d'igualtat de corbes de supervivència entre el número de vegades en recaiguda de cancer entre pacients tenint lesions úniques i lesions localitzades
+
+  - *Compara el número de vegades en recaiguda de cancer entre pacients ab lesions úniques i lesions en més d'un lloc nodal (variable distrib)*
+
+Anàleg, al apartat anterior:
+
+```{r}
+lymphoma_distrib2 <- lymphoma %>% 
+  filter(distrib==0 | distrib==2) %>% 
+  mutate(group=distrib)
+
+Dif.Surv.Rec(lymphoma_distrib2, "all")
+```
+En canvi, en aquest cas, tots els tests presentats indiquen que sí hi ha evidència estadística suficient per rebutjar l'igualtat d'estimacions de corbes de supervivència entre el número de vegades en recaiguda de cancer entre pacients amb lesions úniques i lesions en més d'un lloc nodal.
+
+

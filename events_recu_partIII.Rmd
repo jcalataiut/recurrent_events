@@ -1,0 +1,184 @@
+---
+title: "Exercici d'events recurrents en R (part III)"
+author: "Jose Calatayud Mateu"
+date: "2025-05-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+## Llibreria
+library(devtools)
+library(tidyverse)
+devtools::install_github("isglobal-brge/survrec", 
+                         build = FALSE)
+
+library(survrec)
+library(kableExtra)
+```
+
+Procedim a descarregar manualment l'arxius assosciats als paquet "gcmrec" que està dedicat a funcions de modelatge de models generals per events recurrents i el data sobre el qual treballarem "lymphoma":
+
+```{r}
+source(file="lymphoma.R")
+source(file="survrec.R")
+source(file="gcmrec.R")
+```
+
+El data "lymphoma" contenen els temps de recaiguda del càncer després del primer tractamenten pacients diagnosticats amb lymphoma de grau baix.
+
+```{r}
+head(lymphoma)
+```
+
+
+*NOTA*: la variable _time_ conté els temps entre esdeveniments, _event_ és la variable de censura que val 1 per a recaigudes de càncer i 0 per al darrer moemnt de seguiment (indicant que l'esdeveniment no s'ha observat), i la variable _id_ identifica cada pacient.
+
+## Exercici 2:
+
+_Estima un model frailty (amb el frailtypack package)per investigar si hi ha diferències en el risc de tindre recaigudes de cancer pel que fa al nombre de lesions en la variable de diagnostic (distrib) mitjançant els següents models:_
+
+```{r}
+install.packages("frailtypack")
+library(frailtypack)
+```
+
+
+ - *Gap inter-occurrence time scale and no effect of accumulating previous relapses*
+ 
+ 
+Primer, tenim que tindre la base de dades en la estructura correcta del temps, com que el gap time scale i ho obtenim amb la següent funció:
+
+```{r}
+library(tidyverse)
+
+getCountingProcess <- function(x, colID, colTime) {
+  id <- x[, colID]
+  ids <- unique(id)
+  tt <- x[,colTime]
+  out <- NULL
+  for (i in 1:length(ids)){
+    tt.i <- tt[id%in%ids[i]]
+    start <- c(0, tt.i[-length(tt.i)])
+    out.i <- cbind(start, tt.i)
+    out <- rbind(out, out.i)
+  }
+  ans <- data.frame(x[,colID,drop=TRUE],
+                    x[,colTime],start=out[,1],stop=out[,2],
+                    x %>% dplyr::select(!c(colID, colTime)))
+  
+  names(ans)[1:2] <- names(x[,c(colID, colTime)])
+  return(ans)
+}
+
+getEnum <- function(x, colID) {
+  id <- x[, colID]
+  ids <- unique(id)
+  out <- NULL
+  for (i in 1:length(ids)) {
+    tt.i <- sum(id %in% ids[i])
+    out.i <- 1:tt.i
+    out <- c(out, out.i)
+  }
+  out
+}
+
+convert_gap_time <- function(df, colID, colStop, colStart ) {
+  df_gap <- df
+  df_gap <- df[order(df[[colID]], df[[colStop]]), ]  # ordenar per individu i temps
+
+  # Inicialitzar nova columna 'gap_time'
+  df_gap$gap_stop <- NA
+
+  ids <- unique(df[[colID]])
+  for (i in ids) {
+    idx <- which(df[[colID]] == i)
+    n <- length(idx)
+
+    # Calcular temps entre esdeveniments consecutius
+    times <- df[[colStop]][idx]
+    gaps <- c(times[1], diff(times))
+    df_gap$gap_stop[idx] <- gaps
+  }
+
+  df_gap$start <- 0
+  df_gap$stop <- df_gap$gap_stop
+  df_gap$gap_stop <- NULL  # opcional: eliminar columna auxiliar
+
+  return(df_gap)
+}
+
+
+lymphoma <- lymphoma[order(lymphoma$id, lymphoma$time), ] #ordenem
+lymphoma_ss <- getCountingProcess(lymphoma, colID = "id", colTime = "time") #start-stop
+lymphoma_ss$enum <- getEnum(lymphoma_ss, colID = "id")
+lymphoma_gap_time <- convert_gap_time(lymphoma_ss, colID = "id", colStart = "start", colStop = "stop")
+```
+
+
+Mostrem el database lymphoma amb l'escala de gap time desitjada:
+
+```{r}
+head(lymphoma_gap_time)
+```
+
+ 
+```{r}
+# Model 1: Gap time, sense efecte acumulatiu
+model1 <- frailtyPenal(
+  Surv(time= start, time2 = stop,  event) ~ cluster(id) + as.factor(distrib), 
+  data = lymphoma_gap_time, n.knots = 8, recurrentAG = TRUE, kappa=10000)
+
+
+```
+ 
+  2. Calendar inter-occurrence time scale and no effect of accumulating previous relapses
+  3. Gap time inter-occurrence time scale and effect of accumulating previous relapses
+  4. Calendar inter-occurrence time scale and effect of accumulating previous relapses
+  5. Effect of intervention after relapses without effect of accumulating previous relapses
+  6. Provide an interpretation of model parameters of this last model
+  7. Which is the most adequate model?  Why?  (HINT: use the Akaike criteria since the {gcmrec}
+     function is providing likelihood of each model)
+
+
+
+```{r}
+# Instal·la frailtypack si no el tens
+install.packages("frailtypack")
+library(frailtypack)
+
+
+
+
+# Model 2: Calendar time, sense efecte acumulatiu
+model2 <- frailtyPenal(Surv(cumsum(time), event) ~ cluster(id) + strata(distrib),
+                       data = lymphoma, recurrentAG = TRUE, hazard = "Splines")
+
+# Model 3: Gap time, amb efecte acumulatiu
+lymphoma$accum <- ave(lymphoma$event, lymphoma$id, FUN = cumsum) - 1
+model3 <- frailtyPenal(Surv(time, event) ~ cluster(id) + strata(distrib) + accum,
+                       data = lymphoma, recurrentAG = FALSE, hazard = "Splines")
+
+# Model 4: Calendar time, amb efecte acumulatiu
+model4 <- frailtyPenal(Surv(cumsum(time), event) ~ cluster(id) + strata(distrib) + accum,
+                       data = lymphoma, recurrentAG = TRUE, hazard = "Splines")
+
+# Comparació mitjançant AIC
+AICs <- c(model1$AIC, model2$AIC, model3$AIC, model4$AIC)
+names(AICs) <- c("Gap - No accum", "Calendar - No accum", "Gap - With accum", "Calendar - With accum")
+print(AICs)
+
+# Conclusió global
+best_model <- names(which.min(AICs))
+cat("El model més adequat segons l'AIC és:", best_model, "\n")
+
+```
+
+
+
+

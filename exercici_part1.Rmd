@@ -1,0 +1,142 @@
+---
+title: "Exercici d'events recurrents en R (part I)"
+author: "Jose Calatayud Mateu"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+## Llibreria
+library(devtools)
+library(tidyverse)
+devtools::install_github("isglobal-brge/survrec", 
+                         build = FALSE)
+
+library(survrec)
+```
+
+Procedim a descarregar manualment l'arxius assosciats als paquet "gcmrec" que està dedicat a funcions de modelatge de models generals per events recurrents i el data sobre el qual treballarem "lymphoma":
+
+```{r}
+source(file="lymphoma.R")
+source(file="survrec.R")
+source(file="gcmrec.R")
+```
+
+El data "lymphoma" contenen els temps de recaiguda del càncer després del primer tractamenten pacients diagnosticats amb limfoma de grau baix.
+
+```{r}
+head(lymphoma)
+```
+*NOTA*: la variable _time_ conté els temps entre esdeveniments, _event_ és la variable de censura que val 1 per a recaigudes de càncer i 0 per al darrer moemnt de seguiment (indicant que l'esdeveniment no s'ha observat), i la variable _id_ identifica cada pacient.
+
+### Exercici 1
+
+  - *Estima la función de supervivència utilitzant els mètodes de Peña-Strawderman-Hollander, Wang-Chang i un model de frailty.*
+  
+Abans de res, les dades deuen ordenar-se per `id` i `time` per garantir un anàlisis adequat d'events recurrents:
+
+```{r}
+lymphoma <- lymphoma[order(lymphoma$id, lymphoma$time), ]
+```
+
+L'estimació de la corba de supervivència utilitzant el PSH-method s'estima;
+
+```{r}
+ans.psh <- survfitr(Survr(id, time, event) ~ 1, data=lymphoma, type="pena-strawderman-hollander")
+```
+
+aquesta estimació és similiar a la de Kaplan-Meier, però l'estimació dels error estandar és diferent en el sentit de que PSH considera que els temps estan correlacionats. 
+
+Amb el Frailty model estimen la funció de densitat amb events recurrents on els temps interns d'occurrència estan correlacionats. 
+
+```{r}
+ans.fra <- survfitr(Survr(id, time, event) ~ 1, data=lymphoma, type="MLEfrailty")
+```
+Recordem que un alpha gran indica que la variància del model frailty és 0, és a dir, que el model anterior (PSH) sense tindre en consideració les correlacions intra-ocurrències és suficient per fer fit del data.
+
+Per finalitzar, estime la corba pel mètode de Wand-Chang:
+
+```{r}
+ans.wc <- survfitr(Survr(id, time, event) ~ 1, data=lymphoma, type="wang-chang")
+```
+
+  
+  - *Representa les tres corbes de supervivència en una figura.*
+  
+A continuació es mostra la representació de les tres corbes de supervivència conjuntament:
+
+```{r}
+plot(ans.wc, conf.int=FALSE)
+lines(ans.psh, col="red")
+lines(ans.fra, col="blue")
+legend("topright", c("WC", "PSH", "Frailty"), col=c("black", "red", "blue"), lty=1)
+```
+
+i una altre representació en ggplot2:
+
+```{r}
+library(ggplot2)
+
+# Crear tres dataframes separats
+df_psh <- data.frame(time = ans.psh$time,
+                     surv = ans.psh$surv,
+                     model = "Pena-Strawderman-Hollander")
+
+df_fra <- data.frame(time = ans.fra$time,
+                     surv = ans.fra$surv,
+                     model = "MLE frailty")
+
+df_wc <- data.frame(time = ans.wc$time,
+                    surv = ans.wc$surv,
+                    model = "Wang-Chang")
+
+# Unim els tres en un sol dataframe
+df_all <- bind_rows(df_psh, df_fra, df_wc)
+
+# Graficant
+ggplot(df_all, aes(x = time, y = surv, color = model)) +
+  geom_step(size = 1) +
+  labs(title = "Corbes de Supervivència",
+       x = "Temps",
+       y = "Probabilitat de supervivència",
+       color = "Model") +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 10),
+    legend.position = c(0.80, 0.85),  # coordenades (x, y) dins el gràfic [0-1]
+    legend.background = element_rect(fill = alpha("white", 0.5), color = "grey80"),
+    legend.title = element_text(size = 7),
+    legend.text = element_text(size = 8)
+  )
+```
+
+Les dues gràfiques anteriors representen la mateixa informació, i podem veure que cap dels estimadors és sustancialment diferents dels altres, encara que sembla que els estimadors PSH i Frailty es comportant slightly different de WC.
+
+  - *Hi ha correlació entre els temps inter-esdeveniments?*
+
+En el modelo de Frailty estimen la funció de densitat amb events recurrents on els temps interns d'occurrència estan correlacionats. En aquest cas, alpha encodes la precissió de la distribució gamma utilitzant la formulació presentada en PSH. Així;
+
+ - *Alpha* representa la variança o variabilitat del efecto aleatorio (frailty) entre los individus (o entre clusters, depenent de com s'ha definit el model).
+D'aquesta manera (con ~ 1), probablement es modela un frailty no estructurat per grups, és a decir, cada individu té el seu propi efecte aleatori no observado.  
+
+```{r}
+ans.fra <- survfitr(Survr(id, time, event) ~ 1, data=lymphoma, type="MLEfrailty")
+```
+Així, recordant que Pena-Strawderman-Hollander proposa com estimació de la funció de supervivència amb events recurrents quan hi ha inter-ocurrències correlacionades amb el temps i que s'utilitza la distribució Gamma en aquesta formulació de l'estimació ($\text{Gamma}(\alpha, \alpha)$). D'aquest forma $\alpha$ representa encubreix la presició de la distribució, i com que la variància d'aquesta distribució és $\dfrac{1}{\alpha}$, doncs valors alts d'alpha indiquen una variància propera a $0$, donant lloc a poca dependència entre events. En altres paraules, el model independent PSH seria suficient pel fit del data, com passa en aquest cas
+
+
+  - *Quin és el millor mètode per analitzar aquestes dades?*
+
+Donats els tres models anteriors, a partir de l'estimació de les seues corbes de supervivència, es pot observar que fins al temps $80$ les corbes de PSH i Frailty son molt semblants en canvi, l'estimació de WC es diferència clarament d'aquesta. 
+
+A partir d'aquest temps el comportament semblant entre PSH i Frailty canvia, i WC i Frailty comencen a comportar-se com semblants diferenciant-se de PSH. 
+
+Aixina, recordant que el model de WC captura tant dels suposocions de que les inter-ocurrències entre temps son independents en PSH model i que el data esta correlacionat en Frailty model. I, com a conseqüència de que l'estimació de l'alpha en la distribució Gamma és molt elevada, la variància inter-ocurrències entre els temps sembla tendir a anul·lar-se. Doncs, tal i com es comenta en l'apartat anterior, el PSH model és suficient per l'ajust del nostre data.
+
+
+
