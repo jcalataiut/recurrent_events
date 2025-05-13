@@ -2,7 +2,9 @@
 title: "Exercici d'events recurrents en R (part III)"
 author: "Jose Calatayud Mateu"
 date: "2025-05-11"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -44,140 +46,154 @@ head(lymphoma)
 _Estima un model frailty (amb el frailtypack package)per investigar si hi ha diferències en el risc de tindre recaigudes de cancer pel que fa al nombre de lesions en la variable de diagnostic (distrib) mitjançant els següents models:_
 
 ```{r}
-install.packages("frailtypack")
 library(frailtypack)
 ```
 
-
  - *Gap inter-occurrence time scale and no effect of accumulating previous relapses*
- 
  
 Primer, tenim que tindre la base de dades en la estructura correcta del temps, com que el gap time scale i ho obtenim amb la següent funció:
 
 ```{r}
-library(tidyverse)
+# 1. Ordenem la base de dades per id i temps
+lymphoma <- lymphoma[order(lymphoma$id, lymphoma$time), ] 
 
-getCountingProcess <- function(x, colID, colTime) {
-  id <- x[, colID]
-  ids <- unique(id)
-  tt <- x[,colTime]
-  out <- NULL
-  for (i in 1:length(ids)){
-    tt.i <- tt[id%in%ids[i]]
-    start <- c(0, tt.i[-length(tt.i)])
-    out.i <- cbind(start, tt.i)
-    out <- rbind(out, out.i)
-  }
-  ans <- data.frame(x[,colID,drop=TRUE],
-                    x[,colTime],start=out[,1],stop=out[,2],
-                    x %>% dplyr::select(!c(colID, colTime)))
-  
-  names(ans)[1:2] <- names(x[,c(colID, colTime)])
-  return(ans)
-}
+# 2. Transformem les dades incorpornant carlendar scale
+lymphoma <- lymphoma %>% 
+  group_by(id) %>% 
+  mutate("t.start" = lag(cumsum(time), default = 0)) %>% 
+  mutate("t.stop" = t.start + time) %>%
+  ungroup()
 
-getEnum <- function(x, colID) {
-  id <- x[, colID]
-  ids <- unique(id)
-  out <- NULL
-  for (i in 1:length(ids)) {
-    tt.i <- sum(id %in% ids[i])
-    out.i <- 1:tt.i
-    out <- c(out, out.i)
-  }
-  out
-}
-
-convert_gap_time <- function(df, colID, colStop, colStart ) {
-  df_gap <- df
-  df_gap <- df[order(df[[colID]], df[[colStop]]), ]  # ordenar per individu i temps
-
-  # Inicialitzar nova columna 'gap_time'
-  df_gap$gap_stop <- NA
-
-  ids <- unique(df[[colID]])
-  for (i in ids) {
-    idx <- which(df[[colID]] == i)
-    n <- length(idx)
-
-    # Calcular temps entre esdeveniments consecutius
-    times <- df[[colStop]][idx]
-    gaps <- c(times[1], diff(times))
-    df_gap$gap_stop[idx] <- gaps
-  }
-
-  df_gap$start <- 0
-  df_gap$stop <- df_gap$gap_stop
-  df_gap$gap_stop <- NULL  # opcional: eliminar columna auxiliar
-
-  return(df_gap)
-}
-
-
-lymphoma <- lymphoma[order(lymphoma$id, lymphoma$time), ] #ordenem
-lymphoma_ss <- getCountingProcess(lymphoma, colID = "id", colTime = "time") #start-stop
-lymphoma_ss$enum <- getEnum(lymphoma_ss, colID = "id")
-lymphoma_gap_time <- convert_gap_time(lymphoma_ss, colID = "id", colStart = "start", colStop = "stop")
 ```
-
 
 Mostrem el database lymphoma amb l'escala de gap time desitjada:
 
 ```{r}
-head(lymphoma_gap_time)
+head(lymphoma)
 ```
+Fem proves amb la funció frailtyPenal(), veiem que dona problemes, existeixen time amb valor $0$. Aleshores, tenim que filtrar tots aquells valors que tenen un time nul, en efecte:
 
+```{r}
+lymphoma <- lymphoma %>% filter( time != 0 )
+```
+ 
+Ara passem a modelar tlal i com se'ns demana en l'enunciat:
+
+
+ 1. *Gap inter-occurrence time scale and no effect of accumulating previous relapses*
  
 ```{r}
 # Model 1: Gap time, sense efecte acumulatiu
 model1 <- frailtyPenal(
-  Surv(time= start, time2 = stop,  event) ~ cluster(id) + as.factor(distrib), 
-  data = lymphoma_gap_time, n.knots = 8, recurrentAG = TRUE, kappa=10000)
-
-
+  Surv(time= time,  event) ~ cluster(id) + as.factor(distrib), 
+  data = lymphoma, n.knots = 8, recurrentAG = FALSE, kappa=10000,
+  cross.validation = TRUE)
+model1
 ```
+
  
-  2. Calendar inter-occurrence time scale and no effect of accumulating previous relapses
-  3. Gap time inter-occurrence time scale and effect of accumulating previous relapses
-  4. Calendar inter-occurrence time scale and effect of accumulating previous relapses
-  5. Effect of intervention after relapses without effect of accumulating previous relapses
-  6. Provide an interpretation of model parameters of this last model
-  7. Which is the most adequate model?  Why?  (HINT: use the Akaike criteria since the {gcmrec}
-     function is providing likelihood of each model)
+  2. *Calendar inter-occurrence time scale and no effect of accumulating previous relapses*
+
+```{r, eval=FALSE}
+# Model 2: Calendar time, sense efecte acumulatiu
+model2 <- frailtyPenal(
+  Surv(time= t.start, time2 = t.stop,  event) ~ cluster(id) + as.factor(distrib), 
+  data = lymphoma, n.knots = 8, recurrentAG = FALSE, kappa=10000,
+  cross.validation = TRUE)
+model3
+```
+
+  3. *Gap time inter-occurrence time scale and effect of accumulating previous relapses*
+  
+```{r}
+# Model 3: Gap time, amb efecte acumulatiu
+model3 <- frailtyPenal(
+  Surv(time= time,  event) ~ cluster(id) + as.factor(distrib) + enum, 
+  data = lymphoma, n.knots = 8, recurrentAG = FALSE, kappa=10000,
+  cross.validation = TRUE)
+model3
+```
+
+  4. *Calendar inter-occurrence time scale and effect of accumulating previous relapses*
+
+```{r, eval=FALSE}
+# Model 4: Calendar time, amb efecte acumulatiu
+model2 <- frailtyPenal(
+  Surv(time= t.start, time2 = t.stop,  event) ~ cluster(id) + as.factor(distrib) + enum, 
+  data = lymphoma, n.knots = 8, recurrentAG = FALSE, kappa=10000,
+  cross.validation = TRUE)
+model4
+```
 
 
+  6. *Provide an interpretation of model parameters of this last model*
+  
+No podem aporta una interpretació dels paràmetres de l'últim model perque el model proposat en el apartat 5 del docuement no cal realitzar-ho per a l'exercici 2
+  
+  7. *Which is the most adequate model?  Why?  (HINT: use the Akaike criteria since the {gcmrec} function is providing likelihood of each model)*
+
+
+Els únics models que podem comporar son el model1 i model3 amb escala temps gap-time, que son els únics en que la funció frailtyPenal ha funcionat. Un forma per comparar seria utilitzant la sortida de la funció del model amb argument AIC però en ambdos casos presenta un AIC $0$, ja que els criteris clàssics no són aplicables de manera directa als models penalitzats.
+
+
+És correcte utilitzar el logLikPenal per calcular AIC i BIC? No del tot, els criteris AIC i BIC clàssics es basen en la log-versemblança no penalitzada, i les fórmules són:
+
+$$ 
+\text{AIC} = -2 \cdot \log L + 2k \\
+\text{BIC} = -2 \cdot \log L + k \cdot \log(n)
+$$
+On:
+
+ - $\log L$: log-versemblança del model (no penalitzada)
+ - $k$: nombre de paràmetres estimats
+ - $n$: nombre d'observacions
+
+Tanmateix, `frailtyPenal()` utilitza una log-versemblança penalitzada, que ja inclou termes per regularització (com ara la suavitat dels splines). Per això, els valors d’AIC i BIC no són directament interpretables com en models no penalitzats.
+
+
+Quan sí que té sentit? Seria raonable utilitzar `logLikPenal` per comparar  models del mateix tipus de forma heurística, estimats amb el mateix nivell de penalització. Això és útil, per exemple, quan es volen comparar diferents nombres de splines o especificacions del model amb la mateixa estructura.
+
+Llavors, passem a calcular de forma manual el valor del AIC i el BIC en els dos models per poder-los comparar:
 
 ```{r}
-# Instal·la frailtypack si no el tens
-install.packages("frailtypack")
-library(frailtypack)
 
+# model1
+logLik1 <- model1$logLikPenal
+k1 <- model1$npar
+n <- model1$n
 
+# model3
+logLik3 <- model3$logLikPenal
+k3 <- model3$npar
 
+# Càlculs
+AIC1 <- -2 * logLik1 + 2 * k1
+BIC1 <- -2 * logLik1 + k1 * log(n)
 
-# Model 2: Calendar time, sense efecte acumulatiu
-model2 <- frailtyPenal(Surv(cumsum(time), event) ~ cluster(id) + strata(distrib),
-                       data = lymphoma, recurrentAG = TRUE, hazard = "Splines")
+AIC3 <- -2 * logLik3 + 2 * k3
+BIC3 <- -2 * logLik3 + k3 * log(n)
 
-# Model 3: Gap time, amb efecte acumulatiu
-lymphoma$accum <- ave(lymphoma$event, lymphoma$id, FUN = cumsum) - 1
-model3 <- frailtyPenal(Surv(time, event) ~ cluster(id) + strata(distrib) + accum,
-                       data = lymphoma, recurrentAG = FALSE, hazard = "Splines")
-
-# Model 4: Calendar time, amb efecte acumulatiu
-model4 <- frailtyPenal(Surv(cumsum(time), event) ~ cluster(id) + strata(distrib) + accum,
-                       data = lymphoma, recurrentAG = TRUE, hazard = "Splines")
-
-# Comparació mitjançant AIC
-AICs <- c(model1$AIC, model2$AIC, model3$AIC, model4$AIC)
-names(AICs) <- c("Gap - No accum", "Calendar - No accum", "Gap - With accum", "Calendar - With accum")
-print(AICs)
-
-# Conclusió global
-best_model <- names(which.min(AICs))
-cat("El model més adequat segons l'AIC és:", best_model, "\n")
-
+cat("Model 1: AIC =", AIC1, " BIC =", BIC1, "\n")
+cat("Model 3: AIC =", AIC3, " BIC =", BIC3, "\n")
 ```
+
+Aleshores, el model que presenta un AIC inferior és el model1, doncs aquest seria el nostre model desitjat dintre dels dos. Encara aue el valors son molt ajustat i no hi ha gaire diferències entre escollir uno i un altre, endemés en el model3 el coefients associat al terme acumulatiu no és significatiu, aixina que poptser el model1 sí que és el adequat donat aquest conttext
+
+Encara que l’AIC i el BIC clàssics no són aplicables directament als models penalitzats, és acceptable calcular-los manualment utilitzant `logLikPenal` si:
+
+ - Es comparen models amb la mateixa estructura i tipus de penalització.
+ - L’objectiu és seleccionar el model més adequat dins d’una mateixa família.
+
+En cas contrari, s’aconsella utilitzar mètriques específiques del paquet o tècniques de validació creuada per fer comparacions més robustes. No ens serveix el calcúl del log-likelihood penalitzat per fer comparacions ja que no reporta el fet de que el model3 incorpora un variable més que fa que el log-likelihood sigui superior però no es comparable degut a que incorpora una variable més. 
+
+
+
+
+
+
+
+
+
 
 
 
