@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 ```
 
-
 ```{r, message=FALSE, warning=FALSE}
 ## Llibreria
 library(devtools)
@@ -35,52 +34,50 @@ El data "lymphoma" contenen els temps de recaiguda del càncer després del prim
 ```{r}
 head(lymphoma)
 ```
-*NOTA*: la variable _time_ conté els temps entre esdeveniments, _event_ és la variable de censura que val 1 per a recaigudes de càncer i 0 per al darrer moemnt de seguiment (indicant que l'esdeveniment no s'ha observat), i la variable _id_ identifica cada pacient.
+
+*NOTA*: la variable *time* conté els temps entre esdeveniments, *event* és la variable de censura que val 1 per a recaigudes de càncer i 0 per al darrer moemnt de seguiment (indicant que l'esdeveniment no s'ha observat), i la variable *id* identifica cada pacient.
 
 ## Exercici 1:
 
- - *Estime los modelos AG, PWP-Gap time, PWP-Total time y WLW para determinar si existen diferencias en el tiempo de recaída en función del número de lesiones al momento del diagnóstico (variable distrib). NOTA: Deberá crear los marcos de datos adecuados para los modelos PWT-Gap time y WLW.*
+-   *Estime los modelos AG, PWP-Gap time, PWP-Total time y WLW para determinar si existen diferencias en el tiempo de recaída en función del número de lesiones al momento del diagnóstico (variable distrib). NOTA: Deberá crear los marcos de datos adecuados para los modelos PWT-Gap time y WLW.*
 
-Utilizando los datos de lyphoma (package `gcmrec`), determinar si hay diferències en el temps de recaiguida segons el número de lesions al diagnóstic (variable `distrib`). Per dur-ho a terme, es tenen que estimar els models AG, PWP-Gap time, PWP-Total time y WLW. 
+Utilizando los datos de lyphoma (package `gcmrec`), determinar si hay diferències en el temps de recaiguida segons el número de lesions al diagnóstic (variable `distrib`). Per dur-ho a terme, es tenen que estimar els models AG, PWP-Gap time, PWP-Total time y WLW.
 
 El conjunt de dades contenen les següents variables:
 
- - `id`: identificador del pacient
- - `time`: temps entre recaiguda
- - `event`: variable de censura (1 = recaiguda, 0 = últim seguiment sense observar res).
- - `distrib`: nombre de lesions al diagnostic (0 = única, 1 = localitzada, 2 = més d'un lloc nodal, 3 = generalitzada).
- - `sex`: sexo del pacient.
- - `treat`: resposta al tratament.
- - `age`: edat del pacient.
-
+-   `id`: identificador del pacient
+-   `time`: temps entre recaiguda
+-   `event`: variable de censura (1 = recaiguda, 0 = últim seguiment sense observar res).
+-   `distrib`: nombre de lesions al diagnostic (0 = única, 1 = localitzada, 2 = més d'un lloc nodal, 3 = generalitzada).
+-   `sex`: sexo del pacient.
+-   `treat`: resposta al tratament.
+-   `age`: edat del pacient.
 
 #### **Preparar los datos para los diferentes modelos**
 
 ##### 1. Model AG (Andersen-Gill)
 
-El model AG és una extensió del model de Cox proporcional de risc per a dades d'events recurrents. El seu objectiu és modelar el risc d'ocurrència d'un event recurrent, considerant que un subjecte pot experimentar múltiples events durant el periode de seguiment. A continuació, es detalla la seua estructura i suposits 
+El model AG és una extensió del model de Cox proporcional de risc per a dades d'events recurrents. El seu objectiu és modelar el risc d'ocurrència d'un event recurrent, considerant que un subjecte pot experimentar múltiples events durant el periode de seguiment. A continuació, es detalla la seua estructura i suposits
 
 El model AG asumeix que els events recurrents d'un subjecte segueixen un procès de recompte amb increments independents. El risc per al k-èssim event del subjecte i es modela com:
 
 $$
 \lambda_k(t;Z_{ik}) = \lambda_0(t) e^{\beta'Z_{it}(t)}
-$$
-d'on: 
+$$ d'on:
 
- - $\lambda_0(t)$ és la funció de risc basal comú a tots els individus
- - $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim event.
- - $\beta$ és el vector de paràmetres a estimar
+-   $\lambda_0(t)$ és la funció de risc basal comú a tots els individus
+-   $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim event.
+-   $\beta$ és el vector de paràmetres a estimar
 
 El model AG presenta els següent suposits en la seua construcció:
 
- - *Independència dels increments*: El model AG assumeix que els temps entre esdeveniments consecutius son independents. Açò significa que, el risc d'un nou esdeveniment no depen d'esdeveniments previs, almenys que s'incloguen covariables que capturen eixa dependència (per example, el número d'esdeveniments previs com covariable del tipus temps)
- 
- - *Risc basal comú*: Es usposa que tots els individus comparteixen la mateixa funció de risc basal $\lambda_0(t)$. Açò pot ser un limitació si el risc basalvaria entre esdeveniments
- 
- - *Efecte proporcional de les covariables*: Les covariable tenen un efecte multiplicatiu constant sobre el risc, independenment del número d'esdevenimients previs
+-   *Independència dels increments*: El model AG assumeix que els temps entre esdeveniments consecutius son independents. Açò significa que, el risc d'un nou esdeveniment no depen d'esdeveniments previs, almenys que s'incloguen covariables que capturen eixa dependència (per example, el número d'esdeveniments previs com covariable del tipus temps)
+
+-   *Risc basal comú*: Es usposa que tots els individus comparteixen la mateixa funció de risc basal $\lambda_0(t)$. Açò pot ser un limitació si el risc basalvaria entre esdeveniments
+
+-   *Efecte proporcional de les covariables*: Les covariable tenen un efecte multiplicatiu constant sobre el risc, independenment del número d'esdevenimients previs
 
 Per poder dur a terme el model AG, les dades tenen que estar en format de recompte, és a dir, que cada fila representa un interval de temps entre esdeveniments consecutius i esto ho podem fer amb la funció `getCountingProcess` de la següent manera:
-
 
 ```{r}
 # getCountingProcess: convertir les dades en format de recompte
@@ -132,9 +129,9 @@ summary(ag_model)
 
 Anem a interpretar els resultats del model AG:
 
- - Coeficients: els coeficients estimats $\beta$ indiquen que l'efecte de cada categoria de `distrib` sobre el risc de recaiguda.
+-   Coeficients: els coeficients estimats $\beta$ indiquen que l'efecte de cada categoria de `distrib` sobre el risc de recaiguda.
 
- - Exp(coef): És la interpretació en termes de risc relatiu respecte la categoria basal. En el nostre cas, la categoria basal és quan la lessió durant el diagnóstic és única.
+-   Exp(coef): És la interpretació en termes de risc relatiu respecte la categoria basal. En el nostre cas, la categoria basal és quan la lessió durant el diagnóstic és única.
 
 Amb els resultat del model, es pot veure que totes les categories de lessions durant el diagnostic son covariables significatives excepte la generalitzada.
 
@@ -156,8 +153,7 @@ getEnum <- function(x, colID) {
 
 ```
 
-
-Aleshores, incorporem aquesta variable dependent del temps al model de recaigudes per analitzar la dependència entre els temps de recurrència. 
+Aleshores, incorporem aquesta variable dependent del temps al model de recaigudes per analitzar la dependència entre els temps de recurrència.
 
 ```{r}
 lymphoma_ag$enum <- getEnum(lymphoma_ag, colID=1)
@@ -175,7 +171,7 @@ ag.fit.dep <- coxph(Surv(start, stop, event) ~ as.factor(distrib) + cluster(id) 
 ag.fit.dep
 ```
 
-Incloure la variable dependent del temps que té en compte el nombre de recaigudes previs (enum) redueix el valor de l'estadística $−2logL$ (per exemple, la desviació) que mesura la bondat d'ajust d'un model.
+Incloure la variable dependent del temps que té en compte el nombre de recaigudes previs (enum) redueix el valor de l'estadística $ - 2logL$ (per exemple, la desviació) que mesura la bondat d'ajust d'un model.
 
 ```{r}
 deviance.1 <- -2*summary(ag.fit)$loglik[2] 
@@ -184,7 +180,7 @@ pchisq(deviance.1 - deviance.2, df=1, lower=FALSE)
 qchisq(p=0.95, df=1, lower=FALSE)
 ```
 
-que es estadísticamente significatiu ($95\%$). 
+que es estadísticamente significatiu ($95\%$).
 
 Per tant, el risc de recaiguda de cancer augmenta un $70\%$ $exp(0.5337)=1.70$ a mesura que augmenta el nombre recaigudes previes. El model AG assumeix una funció de risc de referència comuna per a totes les recaigudes. Per tant, podem pensar que utilitzar un model estratificat (model PWP) per nombre de recaigudes podria ser més apropiat. Això estima el model de temps total PWP, ja que les variables d'aturada estan anotades en el temps de calendari.
 
@@ -202,7 +198,7 @@ pwp.fit.total
 
 Podem observar dels resultat, que cap dels coeficients del model és significatiu i que la incorporació per estrats disminueix el risc en totes tres categories respecte el model AG.
 
-En canvi, encara que reduisca el risc, el que sí que es pot veure, es que es manté la relació de que la lesió en més d'un lloc nodal durant el diagnostic continua matinguent un risc superior que en els altres casos. 
+En canvi, encara que reduisca el risc, el que sí que es pot veure, es que es manté la relació de que la lesió en més d'un lloc nodal durant el diagnostic continua matinguent un risc superior que en els altres casos.
 
 ##### 3. Model PWP-Gap time
 
@@ -212,22 +208,21 @@ El model PWP-Gap time assumeix que els temps entre esdeveniments consecutius for
 
 $$
 \lambda_k(t;Z_{ik}) = \lambda_{0k}(t) e^{\beta'Z_{it}(t)}
-$$
-d'on: 
+$$ d'on:
 
- - $\lambda_{0k}(t)$ és la funció de risc basal per al k-èssim esdeveniment.
- - $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim esdeveniment.
- - $\beta$ és el vector de paràmetres a estimar.
- 
+-   $\lambda_{0k}(t)$ és la funció de risc basal per al k-èssim esdeveniment.
+-   $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim esdeveniment.
+-   $\beta$ és el vector de paràmetres a estimar.
+
 En aquest model, cada esdeveniment pot tindre la seua propia funció de risc basal ($\lambda_{0k}(t)$), lo que permiteix capturar diferències en el risc entre esdeveniments successius. Endemés, dintre dels seus suposits trobem:
- 
- - *Procés de renovació*: els temps entre esdeveniments consecutius es suposen independents y la distribució del próxim temps entre events depen només del últim esdevenimment.
- 
- - *Risc basal especific del esdeveniment*: cada esdeveniment pot tindre una funció de risc basal diferent.
- 
- - *Efecte proporcional de les covariables*: les covariables tenen un efecte multiplicatiu constant sobre el risc, independent del número d'esdeveniments previs.
- 
- En el model PWP-Gap time, les dades tenen que estructurar-se en el format de temps entre esdeveniments (gap time), és a dir, cada fila té que representar el temps transcurrit des de l'últim esdeveniment fins al següent. La següent funció ens ajudarà a fer-ho:
+
+-   *Procés de renovació*: els temps entre esdeveniments consecutius es suposen independents y la distribució del próxim temps entre events depen només del últim esdevenimment.
+
+-   *Risc basal especific del esdeveniment*: cada esdeveniment pot tindre una funció de risc basal diferent.
+
+-   *Efecte proporcional de les covariables*: les covariables tenen un efecte multiplicatiu constant sobre el risc, independent del número d'esdeveniments previs.
+
+En el model PWP-Gap time, les dades tenen que estructurar-se en el format de temps entre esdeveniments (gap time), és a dir, cada fila té que representar el temps transcurrit des de l'últim esdeveniment fins al següent. La següent funció ens ajudarà a fer-ho:
 
 ```{r}
 convert_gap_time <- function(df, colID, colStop, colStart ) {
@@ -256,7 +251,6 @@ convert_gap_time <- function(df, colID, colStop, colStart ) {
 }
 
 ```
-
 
 Aplicant la funció a les nostres dades per obtindre el format correcte:
 
@@ -298,6 +292,7 @@ pwp.fit.strata.3 <- coxph(Surv(start, stop, event) ~ as.factor(distrib) + strata
 plot(survfit(pwp.fit.strata.3),lty=c(1,2,3))
 legend("topright", c("1st recaiguda", "2nd recaiguda", "3rd recaiguda"), lty=c(1,2,3), cex = 0.7)
 ```
+
 gráficament, es pot observar les mateixes conclusions que hem deduït en el model AG i la necessitat d'estratificar pel nombre de recaigudes previes. Ací, s'observa que les estimacions de les funcions de supervivència disminueixen significativament després de la primera recaiguda al llarg del temps. Veiem que aquells individus que presenten més d'una recaiguda la seua supervivència es prou inferior a aquells que només experimenten una.
 
 Podem veure com afecta al nombre de lessions del model AG:
@@ -312,7 +307,6 @@ legend("bottomleft", c("localitzada", "> 1 lloc nodal", "generalitzada"), lty=c(
 
 Veiem que, quan els individus presenten lessions en més d'un lloc nodal, la seua funció de supervivència decau més rapidament que en els altres condicions. Endemés, si presenta una lessió generalitzada, la seua funció de supervivència és la més elevada, inclús al llarg del temps experimenta un petit increment. Encara que en es altre casos açò no passa.
 
-
 #### 3. Model WLW (Wei, Lin y Weisfeld)
 
 El model WLW és una extensió del model de COx per a esdeveniments recurrents que permiteix utilitzar dades amb múltiples temps de fallada incomplets. A diferència dels models AG i PWP, que es centren en el procés de recompte o el temps entre esdeveniments, de model WLW modela la distribució marginal de cada esdeveniment recurrent, permitint que cada esdeveniment tinga la seua propia funció de risc basal.
@@ -321,21 +315,20 @@ El model assumeix que la funció de risc per a k-èssim esdeveniment del individ
 
 $$
 \lambda_k(t;Z_{ik}) = \lambda_{0k}(t) e^{\beta'Z_{it}(t)}
-$$
-d'on: 
+$$ d'on:
 
- - $\lambda_{0k}(t)$ és la funció de risc basal per al k-èssim esdeveniment.
- - $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim esdeveniment.
- - $\beta$ és el vector de paràmetres a estimar.
- 
+-   $\lambda_{0k}(t)$ és la funció de risc basal per al k-èssim esdeveniment.
+-   $Z_{ik}(t)$ és un vector de covariables per al individu i en el k-èssim esdeveniment.
+-   $\beta$ és el vector de paràmetres a estimar.
+
 En aquest model, cada esdeveniment pot tindre la seua propia funció de risc basal ($\lambda_{0k}(t)$), lo que permiteix capturar diferències en el risc entre esdeveniments successius. Endemés, dintre dels seus suposits trobem:
- 
- - *Indepència condicional*: els temps entre esdeveniments recurrents son independents condicionalment a les covariables
- 
- - *Risc basal especific del esdeveniment*: cada esdeveniment pot tindre una funció de risc basal diferent.
- 
- - *Efecte proporcional de les covariables*: les covariables tenen un efecte multiplicatiu constant sobre el risc, independent del número d'esdeveniments previs.
- 
+
+-   *Indepència condicional*: els temps entre esdeveniments recurrents son independents condicionalment a les covariables
+
+-   *Risc basal especific del esdeveniment*: cada esdeveniment pot tindre una funció de risc basal diferent.
+
+-   *Efecte proporcional de les covariables*: les covariables tenen un efecte multiplicatiu constant sobre el risc, independent del número d'esdeveniments previs.
+
 En el model WLW, les dades tenen que estructurar-se en el format de temps total des de l'inici, és a dir, cada fila té que representar el temps transcurrit des de l'últim esdeveniment fins al següent i que cada pacient tinga el mateix nombre d'entrades. Per example podem fixar el nombre de recaigudes a 3, però els casos que presenten menys, tenim que duplicar-les. La següent funció ens dona el data ven estructurat
 
 ```{r}
@@ -376,13 +369,13 @@ wlw.fit.total <- coxph(Surv(time, event) ~ as.factor(distrib) + strata(enum) +
                   cluster(id) , data=subset(lymphoma_wlw, enum<4))
 wlw.fit.total
 ```
+
 ```{r}
 plot(survfit(wlw.fit.total), , lty=c(1,2,3)) 
 legend("topright", c("1st recaiguda", "2nd recaiguda", "3rd recaiguda"), lty=c(1,2,3), cex = 0.7)
 ```
 
- - *¿Obtenemos la misma conclusión utilizando los tres modelos? (NOTA: utilice algunas de las funciones que hemos visto en las clases para preparar los datos necesarios).*
- 
+-   *¿Obtenemos la misma conclusión utilizando los tres modelos? (NOTA: utilice algunas de las funciones que hemos visto en las clases para preparar los datos necesarios).*
 
 Per veure si els tres modeles presenten resultat semblant, que com podem esperar, el model AG serà diferent dels altres dos ja que aquests últims consideren que els incrementes no son independents. Aleshora, tenim que observar els coeficients dels models:
 
@@ -395,8 +388,7 @@ xtable2kable(coefs, caption = "Taula de coeficients dels models AG,PWP-Gap time,
       format = "latex")
 ```
 
- 
- - *Repita los mismos análisis ajustando por sexo y respuesta al tratamiento (variable tt effage). ¿Obtenemos la misma conclusión que en los modelos sin dicho ajuste?*
+-   *Repita los mismos análisis ajustando por sexo y respuesta al tratamiento (variable tt effage). ¿Obtenemos la misma conclusión que en los modelos sin dicho ajuste?*
 
 Ajustem el model AG per sexe i resposta al tractament
 
@@ -428,6 +420,7 @@ wlw.fit.total.adj <- coxph(Surv(time, event) ~ as.factor(distrib) + strata(enum)
                   cluster(id) + as.factor(sex) + as.factor(effage), data=subset(lymphoma_wlw, enum<4))
 wlw.fit.total.adj
 ```
+
 Ara de la mateixa forma que abans recollim tota la informació en la següent taula:
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
@@ -437,6 +430,7 @@ rownames(coefs.adj) <- c("AG", "PWP-Total", "PWP-Gap", "WLW")
 colnames(coefs.adj) <- c(paste0("distrib", 1:3), "sex2", paste0("effage", c("PR","SD")))
 xtable2kable(coefs.adj, caption = "Taula de coeficients dels models AG,PWP-Gap time, WLW ajustat per sexe i diagnostic", format = "latex")
 ```
+
 Si ajustem per sexe i per el diagnostic, el resultats no son igual que abans, però les relacions sí, en el model AG adjustat es continua mantenint la relacions entre les categories de lessions durant el diagnostic ja que la categoria que presenta més risc respecte les altres és la associada a lesió en més d'un lloc nodal respecte les altres. En canvi, en els altres model, el comportament de que la lesió generalitzada és la que presenta major risc. Per que respecta a les variables ajustades, el sex 2 té un major risc respecte el sexe 1 i el mateix passa pels diagnostics PR i SD respecte CD.
 
 Endemés, en el model PWP-Total time el risc de tindre un diagnostic "PR" disminueix el risc de patir recaiguda respecte la categoria basal.
@@ -453,11 +447,10 @@ Després d’ajustar per sexe i resposta al tractament, els coeficients de la va
 
 *Comparació de models*
 
- - Els models AG i PWP-Total time produeixen resultats similars, cosa que indica que l’efecte del nombre de lesions és consistent quan es considera el temps total des de l’inici del seguiment.
+-   Els models AG i PWP-Total time produeixen resultats similars, cosa que indica que l’efecte del nombre de lesions és consistent quan es considera el temps total des de l’inici del seguiment.
 
- - El model PWP-Gap time mostra diferències més marcades, la qual cosa podria reflectir que el temps entre recaigudes consecutives està influït per altres factors no capturats en el model.
+-   El model PWP-Gap time mostra diferències més marcades, la qual cosa podria reflectir que el temps entre recaigudes consecutives està influït per altres factors no capturats en el model.
 
- - El model WLW també mostra resultats similars als models AG i PWP-Total time, cosa que suggereix que l’efecte del nombre de lesions és robust a diferents formulacions temporals.
+-   El model WLW també mostra resultats similars als models AG i PWP-Total time, cosa que suggereix que l’efecte del nombre de lesions és robust a diferents formulacions temporals.
 
 En conclusió, tots els models coincideixen que el nombre de lesions en el diagnòstic és un predictor significatiu del temps fins a la recaiguda en pacients amb limfoma de grau baix. Tanmateix, la magnitud exacta d’aquest efecte pot variar segons el model i les covariables incloses.
-
