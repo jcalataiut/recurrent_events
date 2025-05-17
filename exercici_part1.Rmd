@@ -23,8 +23,8 @@ Procedim a descarregar manualment l'arxius assosciats als paquet "gcmrec" que es
 
 ```{r}
 source(file="lymphoma.R")
-source(file="survrec.R")
-source(file="gcmrec.R")
+#source(file="survrec.R")
+#source(file="gcmrec.R")
 ```
 
 El data "lymphoma" contenen els temps de recaiguda del càncer després del primer tractamenten pacients diagnosticats amb limfoma de grau baix.
@@ -59,7 +59,7 @@ ans.fra <- survfitr(Survr(id, time, event) ~ 1, data=lymphoma, type="MLEfrailty"
 ```
 Recordem que un alpha gran indica que la variància del model frailty és 0, és a dir, que el model anterior (PSH) sense tindre en consideració les correlacions intra-ocurrències és suficient per fer fit del data.
 
-Per finalitzar, estime la corba pel mètode de Wand-Chang:
+Per finalitzar, estime la corba pel mètode de Wang-Chang:
 
 ```{r}
 ans.wc <- survfitr(Survr(id, time, event) ~ 1, data=lymphoma, type="wang-chang")

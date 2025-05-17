@@ -1,0 +1,243 @@
+---
+title: "Joint models"
+author: "Jose Calatayud Mateu"
+date: "2025-05-16"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Enunciado
+
+*Disponemos de unos datos longitudinales de un estudio sobre la detección de efectos de diferentes válvulas cardíacas, que difieren en el tipo de tejido y han sido implantadas en la posición aórtica. Los datos consisten en mediciones longitudinales de tres resultados diferentes de la función cardíaca después de la cirugía. Tenemos información sobre algunas covariables iniciales (fijas) y nos interesa estudiar el tiempo hasta la muerte tras la cirugía (variables “fuyrs” y “status”). Crea un modelo que permita predecir la muerte que dependa de alguna variable dependiente del tiempo (“grad”, “lvmi”, “ef”) teniendo en cuenta otras variables fijas que han sido recogidas al inicio del estudio (“age”, “con.cabg”, “dm, “acei, “lv”, “emergenc”, “lvh”, “creat”, “dm”, “hs”). Para contestar a esta pregunta usa un joint model. Ilustra de forma gráfica como este modelo se puede usar para predecir la mortalidad de los tres primeros individuos.*
+
+*Los datos están disponibles en la librería “joineRML” en el dataset “heart.valve” que pueden cargarse en R mediante:*
+
+```{r}
+library(joineRML)
+library(JM)
+library(survminer)
+library(tidyverse)
+data(heart.valve)
+head(heart.valve)
+```
+
+*Podemos conocer el significado de cada variable ejecutando:*
+
+```{r, eval=FALSE}
+?heart.valve
+```
+
+Así el data.frame `heart.valve` está formato no balanceado, es decir, con una fila por cada observación. La base de datos consta de columnas que abarcan la identificación del paciente, el tiempo de las mediciones, múltiples mediciones longitudinales, covariables basales y datos de supervivencia.
+
+A continuación se muestran las variables contenidas:
+
+-   **num:** Número de identificación del paciente.
+-   **sex:** Género del paciente (0 = Masculino y 1 = Femenino).
+-   **age:** Edad del paciente en el día de la cirugía (en años).
+-   **time:** Punto temporal observado, considerando la fecha de la cirugía como origen del tiempo (en años).
+-   **fuyrs:** Tiempo máximo de seguimiento, considerando la fecha de la cirugía como origen del tiempo (en años).
+-   **status:** Indicador de censura (1 = fallecido y 0 = perdido en el seguimiento).
+-   **grad:** Gradiente valvular en la visita de seguimiento.
+-   **log.grad:** Transformación logarítmica natural de *grad*.
+-   **lvmi:** Índice de masa ventricular izquierda (estandarizado) en la visita de seguimiento.
+-   **log.lvmi:** Transformación logarítmica natural de *lvmi*.
+-   **ef:** Fracción de eyección en la visita de seguimiento.
+-   **bsa:** Superficie corporal preoperatoria.
+-   **lvh:** Hipertrofia ventricular izquierda preoperatoria.
+-   **prenyha:** Clasificación preoperatoria de la New York Heart Association (NYHA) (1 = I/II y 3 = III/IV).
+-   **redo:** Cirugía cardíaca previa.
+-   **size:** Tamaño de la válvula (en milímetros).
+-   **con.cabg:** Bypass de la arteria coronaria concomitante.
+-   **creat:** Creatinina sérica preoperatoria ($\mu$mol/mL).
+-   **dm:** Diabetes preoperatoria.
+-   **acei:** Uso preoperatorio de inhibidores de la ECA.
+-   **lv:** Fracción de eyección ventricular izquierda preoperatoria (LVEF) (1 = buena, 2 = moderada, y 3 = pobre).
+-   **emergenc:** Urgencia operativa (0 = electiva, 1 = urgente, y 3 = emergencia).
+-   **hc:** Colesterol alto preoperatorio (0 = ausente, 1 = presente tratado, y 2 = presente no tratado).
+-   **sten.reg.mix:** Hemodinámica de la válvula aórtica (1 = estenosis, 2 = regurgitación, 3 = mixta).
+-   **hs:** Tipo de prótesis aórtica implantada (1 = homograft y 0 = tejido porcino sin stent).
+
+Si observamos el data que se nos presenta, existen valores faltantes, en consecuencia, podria recurrir a imputar pero en nuestro caso, nos centramos en tan solo trabajar con datos completos:
+
+```{r}
+heart.valve <- na.omit(heart.valve)
+```
+
+Además, disponemos de variable que deberian estar en formato factor y estan como numéricas, los modelos no pueden entender las categorias de como estan codificadas si no se les indica expresamente que se trata de una variable factor. Así:
+
+```{r}
+# Convertir variables categóricas en factor
+heart.valve <- heart.valve %>%
+  mutate(
+    sex = factor(sex),
+    lvh = factor(lvh),
+    prenyha = factor(prenyha),
+    redo = factor(redo),
+    con.cabg = factor(con.cabg),
+    dm = factor(dm),
+    acei = factor(acei),
+    lv = factor(lv),
+    emergenc = factor(emergenc),
+    hc = factor(hc),
+    sten.reg.mix = factor(sten.reg.mix),
+    hs = factor(hs)
+  )
+```
+
+Y como indica el enunciado, tenemos que utilizar alguna de las variables dependientes del tiempo (“grad”, “lvmi”, “ef”) para predecir la muerte. En primer lugar, se nos pide en nuestro modelo que variable dependiente deba introducir.
+
+```{r, warning=FALSE}
+g1 <- ggplot(heart.valve, aes(x = time, y = grad, group = num)) +
+  geom_line() + xlab("Años") + facet_wrap(heart.valve$status)
+
+print(g1)
+
+g2 <- ggplot(heart.valve, aes(x = time, y = lvmi, group = num)) +
+  geom_line() + xlab("Años") + facet_wrap(heart.valve$status)
+
+print(g2)
+
+g3 <- ggplot(heart.valve, aes(x = time, y = ef, group = num)) +
+  geom_line() + xlab("Años") + facet_wrap(heart.valve$status)
+
+print(g3)
+```
+
+Aunque las representaciones anteriores no muestran suficiente información sobre cual de ellas podria ser una mejor variable depediente para predecir la muerte, si que podemos observar que en nuestras representaciones estratificando aquellos pacientes que han muerto podemos ver que, en cuento a la variable `grad` (gradiente valvular en la visita de seguimiento), vemos que en los casos de seguiento se mantiene que han fallecido se mantienen a lo largo de los años en niveles bajos y la variable `lvmi` (índice de masa ventricular izquierda estandarizado en la visita de seguimiento) parece presentar como valores superiores que en la mayoria de los casos que no han fallecido. En cambio, la variable `ef` (fracción de eyección en la visita de seguimiento) parece presentar el mismo comportamiento en ambos casos.
+
+Aunque esto solo no dé una intuición de como deberian de comportarse los datos, no debemos de perder de vista que solo es una mirada general y que en ningún caso sera suficiente para determinar si incluimos o no una de las anteriores variables dependientes dentro de nuestro modelo.Así pues, podriamos plantear el hecho de trabajar de forma independiente con los tres modelos hasta llegar a una solución final donde contrastar los resultados entre ellos y decidir que variable dependiente és mejor para la predicción de muerte.
+
+Así pues, para estas dos variables que gráficamente presenta mejores diferenciación entre los casos de muerte y no, visualicemos los 10 primeros individuos para ver si tenemos que usar un modelo mixto con intercept o pendiente aleatoria.
+
+```{r}
+heart10 <- heart.valve %>% filter(num %in% 1:10)
+
+ggplot(heart10, aes(x = time, y = grad)) + 
+  geom_point() +  stat_smooth(method = "lm", se = FALSE) +
+  xlab("Años") + facet_wrap(~num)
+
+ggplot(heart10, aes(x = time, y = lvmi)) + 
+  geom_point() +  stat_smooth(method = "lm", se = FALSE) +
+  xlab("Años") + facet_wrap(~num)
+
+ggplot(heart10, aes(x = time, y = ef)) + 
+  geom_point() +  stat_smooth(method = "lm", se = FALSE) +
+  xlab("Años") + facet_wrap(~num)
+
+```
+
+Ahora vamos a especificar y ajustar los modelos para cada uno de nuestros outcomes. El modelo lineal de efectos mixtos para el gradiente valvular en la visita de seguimientoincluye:
+
+-   Parte de efectos fijos: efecto principal del tiempo
+
+-   Matriz de diseño de efectos aleatorios: el intercept y un término de tiempo, ya que vemos en la gráfica anterior que ambos son aleatorios, es decir hay intercepts y pendientes distintas para cada individuo.
+
+Y parece que este mismo modelo resulta interesante para el resto de las variable que tambien se estan estudiando, aunque con `lvmi` y con `ef` la variación entre individuos es menos pronunciada, se podria considerar que esta varición también se puede incorporar.
+
+```{r}
+fitLME1 <- lme(grad ~ time, random = ~ time | num, data = heart.valve)
+fitLME2 <- lme(lvmi ~ time, random = ~ time | num, data = heart.valve)
+fitLME3 <- lme(ef ~ time, random = ~ time | num, data = heart.valve)
+```
+
+Por otra parte, el submodelo de supervivencia incluye: incluimos ciertas variable fijas del modelo que ajudaran a ajustar mejores las curvas de supervivencia. Además, a partir de los datos utilizamos B-splines que nos dará una estimación sueva de la función de riesgo basal. Así, la el estructura del modelo de supervivencia queda de la siguiente forma pero antes de realizar eso al modelo de Cox tengo que construir un data `heart.valve` agrupando por pacientes y esto funciona porque cada paciente tiene múltiples mediciones (`time`) pero sus variables de supervivencia (`fuyrs`, `age`, `status`...) no cambian entre mediciones.
+
+```{r}
+heart.valve.num <- heart.valve[!duplicated(heart.valve$num), ]  
+
+fitSURV <- coxph(Surv(fuyrs, status) ~ age + con.cabg + dm + acei + lv + emergenc + lvh + creat + hs, data = heart.valve.num, x=TRUE)
+
+ggforest(fitSURV, data = heart.valve.num)
+```
+
+Antes de continuar procedemos por extraer aquellas variables no significativas dentro del modelo para mejorar su ajuste, no aplicamos ningún método de extracción de variable como top-down o :
+
+```{r}
+sum.fitSURV<- summary(fitSURV)
+mat.surv <- sum.fitSURV$coefficients
+aux <- which(mat.surv[,"Pr(>|z|)"]<0.05) %>% names
+print(aux)
+```
+
+Entonces, para nuestro modelo solo nos quedamos con las variable que son significativas. En consecuencia,
+
+```{r}
+fitSURV.nova <- coxph(Surv(fuyrs, status) ~ age + lv + lvh, data = heart.valve.num, x=TRUE)
+summary(fitSURV.nova)
+
+# Dibuja el forest plot de los coeficientes
+ggforest(fitSURV.nova, data = heart.valve.num)
+```
+
+A partir de los resultados del modelo de Cox donde se ha estimado la curva de supervivencia vemos que la edad augmenta el riesgo por cada año más mayor de Fracción de eyección ventricular izquierda preoperatoria
+
+Por tanto, se crea el joint model juntando los dos modelos anteriores de la siguiente forma:
+
+```{r, warning=FALSE}
+fitJM1 <- jointModel(fitLME1, fitSURV.nova, timeVar = "time", method = "weibull-PH-GH")
+fitJM1 %>% summary
+```
+
+Vemos que si hacemos el jointModel con el modelo longitudinal donde se precide la variable `grad` presenta un valor negativo de la variable longitudinal al largo del tiempo queriendo decir que la variable longitudinal `grad` tiende a disminuir con el tiempo. Por lo que respecta a modelo de surpervivencia de Cox construido vemos que la variable edad y lv tienden a aumentar el riesgo. En cambio lvh tiende a dismiuir el riesgo de muerte
+
+La variable Assoct representa la asociación entre la evolución de la variable longitudinal y el riesgo de muerte (en nuestro caso és positivo lo que un mayor valor aumenta el risgo pero NO es significativa). Si exponenciamos su valor $exp(0.029) \approx 1.03$ lo que indica que un aumento de una unidad en el gradiente valvular hace aumentar el riesgo en aprox. $3\%$.
+
+```{r}
+fitJM2 <- jointModel(fitLME2, fitSURV.nova, timeVar = "time", method = "weibull-PH-GH")
+summary(fitJM2)
+```
+
+Presenta resultados diferentes pero interpretaciones análogas al modelo conjunto anterior. En este caso, un aumento de una unidad en la variable longitudinal `lvmi` hace aumentar el riesgo en un $0.4\%$ ya que $exp(0.004) \approx 1.004$ Por último, el modelo conjunto con el submodelo longitudinal `ef`:
+
+```{r}
+fitJM3 <- jointModel(fitLME3, fitSURV.nova, timeVar = "time", method = "weibull-PH-GH")
+summary(fitJM3)
+```
+
+Al igual que en los modelos anteriores, los valores cambian pero las interpretaciones son las mismas, excepto que en este último modelo conjunto el valor de la asociación es negativo, lo que indica que un mayor valor de la vatiable longitudinal está asociado a un menor riesgo, así un aumento de una unidad en la fracción de eyección hace disminuir el riesgo en $2.5\%$ ya que $exp(-0.0251) \approx 0.975$
+
+Vistos los resultados, el modelo que más nos interesa es el que incorpora el submodelo longitudinal `grad`, que presenta el mayor valores de asociación absoluto aunque en ninguno de los modelos anteriores presenten significancia.
+
+Además, ahora vamos a graficar las probabilidades de mortalidad para los dos primeros individuos:
+
+```{r}
+# Pacient 1 (no mort)
+aids.id1 <- filter(heart.valve, num==1)
+fit2 <- survfitJM(fitJM1, newdata = aids.id1[1:2, ], idVar = "num") 
+fit3 <- survfitJM(fitJM1, newdata = aids.id1[1:3, ], idVar = "num") 
+par(mfrow=c(1,2))
+p1 <- plot(fit2, estimator="mean", include.y = TRUE, conf.int=0.95, 
+          fill.area=TRUE, col.area="lightblue", main="Patient 1")
+p2 <- plot(fit3, estimator="mean", include.y = TRUE, conf.int=0.95, 
+           fill.area=TRUE, col.area="lightblue", main="Patient 1")
+```
+
+```{r}
+# Pacient 2 (no mort)
+aids.id1 <- filter(heart.valve, num==2)
+fit2 <- survfitJM(fitJM1, newdata = aids.id1[1:2, ], idVar = "num") 
+fit3 <- survfitJM(fitJM1, newdata = aids.id1[1:3, ], idVar = "num") 
+par(mfrow=c(1,2))
+p1 <- plot(fit2, estimator="mean", include.y = TRUE, conf.int=0.95, 
+          fill.area=TRUE, col.area="lightblue", main="Patient 2")
+p2 <- plot(fit3, estimator="mean", include.y = TRUE, conf.int=0.95, 
+           fill.area=TRUE, col.area="lightblue", main="Patient 2")
+```
+
+```{r}
+# Pacient 13 (mort)
+aids.id1 <- filter(heart.valve, num==13)
+fit2 <- survfitJM(fitJM1, newdata = aids.id1[1:3, ], idVar = "num") 
+fit3 <- survfitJM(fitJM1, newdata = aids.id1[1:4, ], idVar = "num") 
+par(mfrow=c(1,2))
+p1 <- plot(fit2, estimator="mean", include.y = TRUE, conf.int=0.95, 
+          fill.area=TRUE, col.area="lightblue", main="Patient 13")
+p2 <- plot(fit3, estimator="mean", include.y = TRUE, conf.int=0.95, 
+           fill.area=TRUE, col.area="lightblue", main="Patient 13")
+```
+
+Las representaciones anteriores, muestran las predicciones para los pacientes $1,2,13$ donde los dos primeros presentan `status` $0$ y el otro `status` $1$. En consecuencia, se puede ver que el longitudinal outcome en los dos primeros a lo0 largo del tiempo se mantiene constante (paciente 1) o disminuye (paciente 2) y, en cambio, se muestra un tendencia creciente para el paciente 13, un aumento de la variable longitudinal `grad` viene asociado a un mayor riesgo de mortalidad y en efecto el status que presenta es ese.
